@@ -1,6 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const multer = require('multer');
+const fs = require('fs');
 const { Pool } = require('pg');
 require('dotenv').config();
 
@@ -11,6 +13,40 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public'))); // Serve static files from public folder
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'))); // Serve uploaded files
+
+// Create uploads directory if it doesn't exist
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+// Configure multer for file uploads
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, uploadsDir);
+  },
+  filename: function (req, file, cb) {
+    // Generate unique filename with timestamp and original extension
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, 'company-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB limit
+  },
+  fileFilter: function (req, file, cb) {
+    // Check file type
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image files are allowed!'), false);
+    }
+  }
+});
 
 // Database connection
 const pool = new Pool({
@@ -280,15 +316,24 @@ const generateLogoUrl = (website) => {
   }
 };
 
-// Add a new company
-app.post('/api/admin/companies', async (req, res) => {
+// Add a new company with optional logo upload
+app.post('/api/admin/companies', upload.single('logo'), async (req, res) => {
   const { name, website } = req.body;
 
   if (!name || name.trim() === '') {
     return res.status(400).json({ error: 'Company name is required' });
   }
 
-  const logoUrl = generateLogoUrl(website);
+  let logoUrl = null;
+  
+  // If logo was uploaded, use the uploaded file
+  if (req.file) {
+    logoUrl = `/uploads/${req.file.filename}`;
+  } 
+  // Otherwise, try to generate from website if provided
+  else if (website) {
+    logoUrl = generateLogoUrl(website);
+  }
 
   try {
     const result = await pool.query(
@@ -302,6 +347,13 @@ app.post('/api/admin/companies', async (req, res) => {
     });
 
   } catch (error) {
+    // If database insertion fails, clean up uploaded file
+    if (req.file) {
+      fs.unlink(req.file.path, (err) => {
+        if (err) console.error('Error deleting uploaded file:', err);
+      });
+    }
+    
     if (error.code === '23505') { // Unique constraint violation
       return res.status(400).json({ error: 'Company already exists' });
     }
@@ -376,6 +428,62 @@ app.get('/api/admin/votes', async (req, res) => {
   } catch (error) {
     console.error('Error fetching votes:', error);
     res.status(500).json({ error: 'Failed to fetch votes' });
+  }
+});
+
+// Update company logo
+app.patch('/api/admin/companies/:id/logo', upload.single('logo'), async (req, res) => {
+  const { id } = req.params;
+
+  if (!req.file) {
+    return res.status(400).json({ error: 'No logo file provided' });
+  }
+
+  try {
+    // Get current company data to potentially clean up old logo
+    const currentCompany = await pool.query(
+      'SELECT logo_url FROM companies WHERE id = $1',
+      [id]
+    );
+
+    if (currentCompany.rows.length === 0) {
+      // Clean up uploaded file if company doesn't exist
+      fs.unlink(req.file.path, (err) => {
+        if (err) console.error('Error deleting uploaded file:', err);
+      });
+      return res.status(404).json({ error: 'Company not found' });
+    }
+
+    const logoUrl = `/uploads/${req.file.filename}`;
+
+    // Update company with new logo
+    const result = await pool.query(
+      'UPDATE companies SET logo_url = $1 WHERE id = $2 RETURNING *',
+      [logoUrl, id]
+    );
+
+    // Clean up old logo file if it was an uploaded file
+    const oldLogoUrl = currentCompany.rows[0].logo_url;
+    if (oldLogoUrl && oldLogoUrl.startsWith('/uploads/')) {
+      const oldFilePath = path.join(__dirname, oldLogoUrl);
+      fs.unlink(oldFilePath, (err) => {
+        if (err) console.error('Error deleting old logo file:', err);
+      });
+    }
+
+    res.json({
+      message: 'Logo updated successfully',
+      company: result.rows[0]
+    });
+
+  } catch (error) {
+    // Clean up uploaded file on error
+    fs.unlink(req.file.path, (err) => {
+      if (err) console.error('Error deleting uploaded file:', err);
+    });
+    
+    console.error('Error updating logo:', error);
+    res.status(500).json({ error: 'Failed to update logo' });
   }
 });
 
