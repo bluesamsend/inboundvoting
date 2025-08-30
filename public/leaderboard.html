@@ -1,23 +1,4 @@
-.company-logo {
-            width: 80px;
-            height: 80px;
-            border-radius: 15px;
-            object-fit: contain;
-            background: #f8f9fa;
-            border: 2px solid #e9ecef;
-            margin-bottom: 15px;
-            padding: 10px;
-        }
-
-        .company-logo-small {
-            width: 50px;
-            height: 50px;
-            border-radius: 10px;
-            object-fit: contain;
-            background: #f8f9fa;
-            border: 1px solid #e9ecef;
-            padding: 5px;
-        }<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -31,51 +12,43 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             background: #ffffff;
-            min-height: 100vh;
-            padding: 20px;
             color: #1a1a1a;
+            padding: 40px 20px;
         }
 
-        .leaderboard-container {
-            max-width: 1200px;
+        .container {
+            max-width: 1000px;
             margin: 0 auto;
         }
 
         .header {
             text-align: center;
-            margin-bottom: 40px;
+            margin-bottom: 60px;
         }
 
-        .main-title {
-            font-size: 36px;
+        .title {
+            font-size: 32px;
             font-weight: 600;
             color: #1a1a1a;
-            margin-bottom: 8px;
-            letter-spacing: -0.02em;
+            margin-bottom: 12px;
         }
 
         .subtitle {
-            font-size: 18px;
-            color: #6b7280;
-            margin-bottom: 20px;
-            font-weight: 400;
-            line-height: 1.5;
+            font-size: 16px;
+            color: #64748b;
+            margin-bottom: 30px;
         }
 
         .stats {
             display: flex;
             justify-content: center;
-            gap: 30px;
-            margin-bottom: 20px;
+            gap: 40px;
+            margin-bottom: 50px;
         }
 
-        .stat-item {
-            background: #f8fafc;
-            padding: 20px 24px;
-            border-radius: 12px;
-            border: 1px solid #e2e8f0;
+        .stat {
             text-align: center;
         }
 
@@ -89,96 +62,115 @@
             font-size: 14px;
             color: #64748b;
             margin-top: 4px;
-            font-weight: 500;
         }
 
         .podium {
             display: flex;
             justify-content: center;
             align-items: flex-end;
-            gap: 20px;
-            margin-bottom: 50px;
+            gap: 30px;
+            margin-bottom: 60px;
             min-height: 300px;
         }
 
-        .podium-place {
+        .place {
             background: #ffffff;
+            border: 2px solid #e2e8f0;
             border-radius: 16px;
             padding: 32px 24px;
-            border: 1px solid #e2e8f0;
             text-align: center;
+            min-width: 220px;
             position: relative;
-            transition: all 0.3s ease;
+            transition: transform 0.3s ease;
         }
 
-        .podium-place:hover {
+        .place:hover {
             transform: translateY(-4px);
-            box-shadow: 0 12px 32px rgba(0,0,0,0.08);
         }
 
-        .podium-place.first {
-            order: 2;
+        .place.first { 
             height: 320px;
             border-color: #1976d2;
             background: linear-gradient(135deg, #ffffff 0%, #f0f7ff 100%);
+            order: 2;
         }
 
-        .podium-place.second {
-            order: 1;
+        .place.second { 
             height: 280px;
             border-color: #64748b;
             background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            order: 1;
         }
 
-        .podium-place.third {
-            order: 3;
+        .place.third { 
             height: 240px;
             border-color: #f59e0b;
             background: linear-gradient(135deg, #ffffff 0%, #fffbeb 100%);
+            order: 3;
         }
 
-        .medal {
+        .place-number {
             position: absolute;
-            top: -15px;
-            right: -15px;
-            width: 50px;
-            height: 50px;
+            top: -16px;
+            right: -16px;
+            width: 48px;
+            height: 48px;
             border-radius: 50%;
+            color: white;
+            font-weight: 700;
+            font-size: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: bold;
-            font-size: 20px;
-            color: white;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
 
-        .medal.first { background: linear-gradient(135deg, #1976d2, #1565c0); }
-        .medal.second { background: linear-gradient(135deg, #64748b, #475569); }
-        .medal.third { background: linear-gradient(135deg, #f59e0b, #d97706); }
-
-
+        .place.first .place-number { 
+            background: linear-gradient(135deg, #1976d2, #1565c0);
+        }
+        
+        .place.second .place-number { 
+            background: linear-gradient(135deg, #64748b, #475569);
+        }
+        
+        .place.third .place-number { 
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
 
         .place-label {
-            font-size: 16px;
-            font-weight: bold;
-            color: #666;
-            margin-bottom: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #64748b;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .company-logo {
+            width: 80px;
+            height: 80px;
+            border-radius: 12px;
+            object-fit: contain;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 8px;
+            margin: 0 auto 20px;
         }
 
         .company-name {
             font-size: 20px;
-            font-weight: 600;
+            font-weight: 700;
             color: #1a1a1a;
-            margin-bottom: 6px;
-            letter-spacing: -0.01em;
+            margin-bottom: 8px;
+            line-height: 1.2;
         }
 
         .company-website {
-            font-size: 14px;
+            font-size: 13px;
             color: #1976d2;
-            margin-bottom: 16px;
             text-decoration: none;
+            margin-bottom: 20px;
+            display: block;
             font-weight: 500;
         }
 
@@ -187,162 +179,92 @@
         }
 
         .vote-count {
-            font-size: 32px;
-            font-weight: 700;
+            font-size: 36px;
+            font-weight: 800;
             color: #1976d2;
             letter-spacing: -0.02em;
         }
 
-        .full-leaderboard {
-            background: #ffffff;
-            border-radius: 16px;
+        .table {
+            background: white;
             border: 1px solid #e2e8f0;
+            border-radius: 12px;
             overflow: hidden;
         }
 
-        .leaderboard-header {
+        .table-header {
             background: #1976d2;
             color: white;
-            padding: 24px 32px;
-            text-align: center;
-        }
-
-        .leaderboard-title {
-            font-size: 24px;
+            padding: 20px 24px;
+            font-size: 18px;
             font-weight: 600;
-            margin-bottom: 0;
-            letter-spacing: -0.01em;
-        }
-
-        .table-header {
-            display: grid;
-            grid-template-columns: 100px 1fr 120px 100px;
-            padding: 20px 25px;
-            background: #f8f9fa;
-            font-weight: bold;
-            color: #2d3748;
-            border-bottom: 2px solid #e9ecef;
-        }
-
-        .leaderboard-row {
-            display: grid;
-            grid-template-columns: 100px 1fr 120px 100px;
-            padding: 20px 25px;
-            border-bottom: 1px solid #e9ecef;
-            align-items: center;
-            transition: background-color 0.3s ease;
-        }
-
-        .leaderboard-row:hover {
-            background: #f8f9fa;
-        }
-
-        .rank-display {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .rank-number {
-            width: 35px;
-            height: 35px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            color: white;
-            font-size: 18px;
-        }
-
-        .rank-number.gold { background: linear-gradient(135deg, #FFD700, #FFA500); }
-        .rank-number.silver { background: linear-gradient(135deg, #C0C0C0, #A8A8A8); }
-        .rank-number.bronze { background: linear-gradient(135deg, #CD7F32, #B8860B); }
-        .rank-number.other { background: linear-gradient(135deg, #6c757d, #5a6268); }
-
-        .company-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-
-
-        .company-details h3 {
-            font-size: 18px;
-            color: #2d3748;
-            margin-bottom: 2px;
-        }
-
-        .company-details a {
-            font-size: 14px;
-            color: #007AFF;
-            text-decoration: none;
-        }
-
-        .company-details a:hover {
-            text-decoration: underline;
-        }
-
-        .vote-display {
             text-align: center;
         }
 
-        .vote-number {
-            font-size: 24px;
-            font-weight: bold;
-            color: #007AFF;
+        .table-row {
+            display: grid;
+            grid-template-columns: 60px 1fr 100px 80px;
+            padding: 16px 24px;
+            border-bottom: 1px solid #f1f5f9;
+            align-items: center;
         }
 
-        .vote-percentage {
-            font-size: 14px;
-            color: #666;
+        .table-row:last-child {
+            border-bottom: none;
+        }
+
+        .table-row:hover {
+            background: #f8fafc;
+        }
+
+        .rank {
+            font-weight: 700;
+            color: #1976d2;
+        }
+
+        .company {
+            font-weight: 600;
+        }
+
+        .company a {
+            color: #64748b;
+            font-size: 13px;
+            text-decoration: none;
+            display: block;
             margin-top: 2px;
+        }
+
+        .votes {
+            font-weight: 700;
+            color: #1976d2;
+            text-align: center;
+        }
+
+        .percentage {
+            color: #64748b;
+            text-align: center;
         }
 
         .last-updated {
             text-align: center;
-            color: #666;
-            margin-top: 20px;
+            color: #64748b;
             font-size: 14px;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 50px;
-            font-size: 18px;
-            color: #666;
-        }
-
-        .error {
-            text-align: center;
-            padding: 50px;
-            color: #dc3545;
-            font-size: 18px;
-        }
-
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; }
-        }
-
-        .refreshing {
-            animation: pulse 1.5s infinite;
+            margin-top: 30px;
         }
     </style>
 </head>
 <body>
-    <div class="leaderboard-container">
+    <div class="container">
         <div class="header">
-            <h1 class="main-title">Ultimate Pitch Showdown</h1>
+            <h1 class="title">Ultimate Pitch Showdown</h1>
             <p class="subtitle">Vote For The Best Pitch At Inbound25. Sendblue Will Donate $10,000 To The Winning Businesses Charity Of Choice</p>
+            
             <div class="stats">
-                <div class="stat-item">
+                <div class="stat">
                     <div class="stat-number" id="totalVotes">0</div>
                     <div class="stat-label">Total Votes</div>
                 </div>
-                <div class="stat-item">
+                <div class="stat">
                     <div class="stat-number" id="totalCompanies">0</div>
                     <div class="stat-label">Companies</div>
                 </div>
@@ -353,20 +275,12 @@
             <!-- Top 3 will be inserted here -->
         </div>
 
-        <div class="full-leaderboard">
-            <div class="leaderboard-header">
-                <h2 class="leaderboard-title">Complete Rankings</h2>
-            </div>
-            
+        <div class="table">
             <div class="table-header">
-                <div>Rank</div>
-                <div>Company</div>
-                <div>Votes</div>
-                <div>%</div>
+                Complete Rankings
             </div>
-            
-            <div id="leaderboardTable">
-                <div class="loading">Loading leaderboard...</div>
+            <div id="tableBody">
+                <div style="padding: 40px; text-align: center; color: #64748b;">Loading...</div>
             </div>
         </div>
 
@@ -374,172 +288,78 @@
     </div>
 
     <script>
-        // Configuration
         const API_BASE_URL = 'https://inboundvoting-production.up.railway.app/api';
-        const REFRESH_INTERVAL = 5000; // 5 seconds
+        const REFRESH_INTERVAL = 30000; // 30 seconds
 
-        let refreshTimer;
-
-        // Fetch leaderboard data
         async function fetchLeaderboard() {
             try {
                 const response = await fetch(`${API_BASE_URL}/leaderboard`);
-                if (!response.ok) throw new Error('Failed to fetch leaderboard');
-                
                 const data = await response.json();
                 updateLeaderboard(data);
-                
             } catch (error) {
-                console.error('Error fetching leaderboard:', error);
-                showError('Unable to load leaderboard data');
+                console.error('Error:', error);
+                document.getElementById('tableBody').innerHTML = 
+                    '<div style="padding: 40px; text-align: center; color: #dc2626;">Unable to load data</div>';
             }
         }
 
-        // Update the leaderboard display
         function updateLeaderboard(data) {
             const { leaderboard, totalVotes, lastUpdated } = data;
             
-            // Update stats
             document.getElementById('totalVotes').textContent = totalVotes;
             document.getElementById('totalCompanies').textContent = leaderboard.length;
             
-            // Update podium (top 3)
             updatePodium(leaderboard.slice(0, 3));
-            
-            // Update full table
             updateTable(leaderboard);
             
-            // Update timestamp
             const updateTime = new Date(lastUpdated).toLocaleString();
             document.getElementById('lastUpdated').textContent = `Last updated: ${updateTime}`;
         }
 
-        // Update podium display
         function updatePodium(topThree) {
             const podium = document.getElementById('podium');
-            podium.innerHTML = '';
+            const positions = ['second', 'first', 'third'];
+            const numbers = ['2', '1', '3'];
+            const labels = ['2nd Place', '1st Place', '3rd Place'];
             
-            // Ensure we have exactly 3 positions, fill with TBD if needed
-            while (topThree.length < 3) {
-                topThree.push({ name: 'TBD', votes: 0, website: '', rank: topThree.length + 1 });
-            }
-            
-            // Map companies to their correct podium positions
-            const first = topThree[0]; // 1st place (highest votes)
-            const second = topThree[1]; // 2nd place
-            const third = topThree[2]; // 3rd place
-            
-            const positions = [
-                { company: second, position: 'second', label: '2nd Place', medal: '2' },
-                { company: first, position: 'first', label: '1st Place', medal: '1' },
-                { company: third, position: 'third', label: '3rd Place', medal: '3' }
-            ];
-            
-            positions.forEach(({ company, position, label, medal }) => {
-                const placeDiv = document.createElement('div');
-                placeDiv.className = `podium-place ${position}`;
-                
-                placeDiv.innerHTML = `
-                    <div class="medal ${position}">${medal}</div>
-                    <div class="place-label">${label}</div>
-                    <img src="${company.logoUrl ? `https://inboundvoting-production.up.railway.app${company.logoUrl}` : '/api/placeholder/80/80'}" 
-                         alt="${company.name}" 
-                         class="company-logo"
-                         onerror="this.src='/api/placeholder/80/80'">
-                    <div class="company-name">${company.name}</div>
-                    ${company.website ? `<a href="${company.website}" class="company-website" target="_blank">${company.website}</a>` : ''}
-                    <div class="vote-count">${company.votes}</div>
-                `;
-                
-                podium.appendChild(placeDiv);
-            });
-        }
-
-        // Update table display
-        function updateTable(leaderboard) {
-            const table = document.getElementById('leaderboardTable');
-            
-            if (leaderboard.length === 0) {
-                table.innerHTML = '<div class="loading">No companies added yet</div>';
-                return;
-            }
-            
-            table.innerHTML = leaderboard.map(company => {
-                const rankClass = company.rank === 1 ? 'gold' : 
-                                company.rank === 2 ? 'silver' : 
-                                company.rank === 3 ? 'bronze' : 'other';
-                
+            podium.innerHTML = positions.map((pos, i) => {
+                const company = topThree[i] || { name: 'TBD', votes: 0, website: '', logoUrl: null };
                 return `
-                    <div class="leaderboard-row">
-                        <div class="rank-display">
-                            <div class="rank-number ${rankClass}">${company.rank}</div>
-                        </div>
-                        <div class="company-info">
-                            <img src="${company.logoUrl ? `https://inboundvoting-production.up.railway.app${company.logoUrl}` : '/api/placeholder/50/50'}" 
-                                 alt="${company.name}" 
-                                 class="company-logo-small"
-                                 onerror="this.src='/api/placeholder/50/50'">
-                            <div class="company-details">
-                                <h3>${company.name}</h3>
-                                ${company.website ? `<a href="${company.website}" target="_blank">${company.website}</a>` : ''}
-                            </div>
-                        </div>
-                        <div class="vote-display">
-                            <div class="vote-number">${company.votes}</div>
-                        </div>
-                        <div class="vote-display">
-                            <div class="vote-number">${company.percentage}%</div>
-                        </div>
+                    <div class="place ${pos}">
+                        <div class="place-number">${numbers[i]}</div>
+                        <div class="place-label">${labels[i]}</div>
+                        ${company.logoUrl ? `<img src="https://inboundvoting-production.up.railway.app${company.logoUrl}" alt="${company.name}" class="company-logo" onerror="this.style.display='none'">` : ''}
+                        <div class="company-name">${company.name}</div>
+                        ${company.website ? `<a href="${company.website}" class="company-website" target="_blank">${company.website}</a>` : ''}
+                        <div class="vote-count">${company.votes}</div>
                     </div>
                 `;
             }).join('');
         }
 
-        // Show error message
-        function showError(message) {
-            document.getElementById('leaderboardTable').innerHTML = 
-                `<div class="error">${message}</div>`;
-        }
-
-        // Auto-refresh functionality
-        function startAutoRefresh() {
-            refreshTimer = setInterval(() => {
-                document.body.classList.add('refreshing');
-                fetchLeaderboard().finally(() => {
-                    setTimeout(() => {
-                        document.body.classList.remove('refreshing');
-                    }, 300);
-                });
-            }, REFRESH_INTERVAL);
-        }
-
-        function stopAutoRefresh() {
-            if (refreshTimer) {
-                clearInterval(refreshTimer);
-                refreshTimer = null;
+        function updateTable(leaderboard) {
+            const tbody = document.getElementById('tableBody');
+            
+            if (leaderboard.length === 0) {
+                tbody.innerHTML = '<div style="padding: 40px; text-align: center; color: #64748b;">No companies yet</div>';
+                return;
             }
+            
+            tbody.innerHTML = leaderboard.map(company => `
+                <div class="table-row">
+                    <div class="rank">${company.rank}</div>
+                    <div class="company">
+                        ${company.name}
+                        ${company.website ? `<a href="${company.website}" target="_blank">${company.website}</a>` : ''}
+                    </div>
+                    <div class="votes">${company.votes}</div>
+                    <div class="percentage">${company.percentage}%</div>
+                </div>
+            `).join('');
         }
 
-        // Initialize
-        document.addEventListener('DOMContentLoaded', () => {
-            fetchLeaderboard();
-            startAutoRefresh();
-        });
-
-        // Handle page visibility for performance
-        document.addEventListener('visibilitychange', () => {
-            if (document.hidden) {
-                stopAutoRefresh();
-            } else {
-                startAutoRefresh();
-                fetchLeaderboard();
-            }
-        });
-
-        // Handle window focus/blur
-        window.addEventListener('focus', () => {
-            fetchLeaderboard();
-        });
+        document.addEventListener('DOMContentLoaded', fetchLeaderboard);
+        setInterval(fetchLeaderboard, REFRESH_INTERVAL);
     </script>
 </body>
 </html>
