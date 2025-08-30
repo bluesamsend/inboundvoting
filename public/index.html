@@ -230,7 +230,7 @@
             </button>
 
             <div class="success-message" id="successMessage">
-                🎉 Thank you! Your vote has been recorded successfully.
+                🎉 Thank you! Your vote has been recorded successfully. Redirecting to leaderboard...
             </div>
 
             <div class="error-message" id="errorMessage">
@@ -314,14 +314,16 @@
                 const result = await response.json();
                 
                 if (response.ok) {
-                    // Show success message
+                    // Show success message briefly
                     successMessage.style.display = 'block';
                     
                     // Reset form
                     document.getElementById('votingForm').reset();
                     
-                    // Reload companies (in case of changes)
-                    loadCompanies();
+                    // Redirect to leaderboard after 2 seconds
+                    setTimeout(() => {
+                        window.location.href = '/leaderboard';
+                    }, 2000);
                 } else {
                     throw new Error(result.error || 'Failed to submit vote');
                 }
