@@ -33,9 +33,9 @@ const initDB = async () => {
       )
     `);
 
-    // Create new votes table with constraints built-in
+    // Create votes table with proper constraints
     await pool.query(`
-      CREATE TABLE IF NOT EXISTS votes_new (
+      CREATE TABLE IF NOT EXISTS votes (
         id SERIAL PRIMARY KEY,
         voter_name VARCHAR(255) NOT NULL,
         voter_email VARCHAR(255) NOT NULL UNIQUE,
@@ -45,23 +45,14 @@ const initDB = async () => {
       )
     `);
 
-    // If the old votes table exists, we'll use the new one instead
-    try {
-      await pool.query(`DROP TABLE IF EXISTS votes_old`);
-      await pool.query(`ALTER TABLE votes RENAME TO votes_old`);
-      await pool.query(`ALTER TABLE votes_new RENAME TO votes`);
-      console.log('Created new votes table with unique constraints');
-    } catch (error) {
-      // If renaming fails, the new table is already named 'votes'
-      console.log('Votes table setup completed');
-    }
-
     // Insert default companies if they don't exist
     await pool.query(`
       INSERT INTO companies (name, website, logo_url) 
       VALUES 
+        ('Sendblue', 'https://www.sendblue.com/', null),
         ('Apple', 'https://apple.com', 'https://logo.clearbit.com/apple.com'),
-        ('Google', 'https://google.com', 'https://logo.clearbit.com/google.com')
+        ('Google', 'https://google.com', 'https://logo.clearbit.com/google.com'),
+        ('Supered', 'https://www.supered.io/', null)
       ON CONFLICT (name) DO NOTHING
     `);
 
@@ -210,9 +201,9 @@ app.post('/api/vote', async (req, res) => {
     
     // Check for duplicate constraint violations
     if (error.code === '23505') { // PostgreSQL unique constraint violation
-      if (error.constraint === 'unique_email') {
+      if (error.constraint === 'votes_voter_email_key') {
         return res.status(400).json({ error: 'This email address has already been used to vote' });
-      } else if (error.constraint === 'unique_phone') {
+      } else if (error.constraint === 'votes_voter_phone_key') {
         return res.status(400).json({ error: 'This phone number has already been used to vote' });
       } else {
         return res.status(400).json({ error: 'You have already voted' });
@@ -231,6 +222,7 @@ app.get('/api/leaderboard', async (req, res) => {
         c.id,
         c.name,
         c.website,
+        c.logo_url,
         COUNT(v.id) as vote_count,
         ROUND(
           (COUNT(v.id) * 100.0 / NULLIF((SELECT COUNT(*) FROM votes), 0)), 
@@ -239,7 +231,7 @@ app.get('/api/leaderboard', async (req, res) => {
       FROM companies c
       LEFT JOIN votes v ON c.id = v.company_id
       WHERE c.active = true
-      GROUP BY c.id, c.name, c.website
+      GROUP BY c.id, c.name, c.website, c.logo_url
       ORDER BY vote_count DESC, c.name
     `);
 
@@ -248,6 +240,7 @@ app.get('/api/leaderboard', async (req, res) => {
       id: row.id,
       name: row.name,
       website: row.website,
+      logoUrl: row.logo_url,
       votes: parseInt(row.vote_count),
       percentage: parseFloat(row.percentage) || 0
     }));
