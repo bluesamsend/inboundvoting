@@ -18,9 +18,126 @@
             padding: 20px;
         }
 
+        /* Login Screen Styles */
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .login-box {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .login-header {
+            margin-bottom: 30px;
+        }
+
+        .login-header h1 {
+            font-size: 28px;
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+
+        .login-header p {
+            color: #666;
+            font-size: 16px;
+        }
+
+        .login-form {
+            text-align: left;
+        }
+
+        .login-form .form-group {
+            margin-bottom: 20px;
+        }
+
+        .login-form label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .login-form input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .login-form input:focus {
+            outline: none;
+            border-color: #007AFF;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #007AFF, #005bb5);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 122, 255, 0.3);
+        }
+
+        .login-error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #f5c6cb;
+        }
+
+        .logout-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .logout-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 3px 10px rgba(220, 53, 69, 0.3);
+        }
+
+        /* Main Admin Panel Styles */
         .admin-container {
             max-width: 1200px;
             margin: 0 auto;
+            display: none;
+        }
+
+        .admin-container.authenticated {
+            display: block;
         }
 
         .header {
@@ -168,8 +285,6 @@
             border-color: #007AFF;
         }
 
-
-
         .company-info {
             flex: 1;
         }
@@ -287,10 +402,43 @@
         .fade-in {
             animation: fadeIn 0.3s ease;
         }
+
+        /* Hide/show based on authentication */
+        .login-screen {
+            display: block;
+        }
+
+        .login-screen.hidden {
+            display: none;
+        }
     </style>
 </head>
 <body>
-    <div class="admin-container">
+    <!-- Login Screen -->
+    <div id="loginScreen" class="login-screen">
+        <div class="login-container">
+            <div class="login-box">
+                <div class="login-header">
+                    <h1>🔐 Admin Access</h1>
+                    <p>Enter password to access the admin panel</p>
+                </div>
+                <form id="loginForm" class="login-form">
+                    <div id="loginError"></div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" required placeholder="Enter admin password">
+                    </div>
+                    <button type="submit" class="login-btn">Login</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Logout Button (shown when authenticated) -->
+    <button id="logoutBtn" class="logout-btn" onclick="logout()" style="display: none;">🚪 Logout</button>
+
+    <!-- Main Admin Panel -->
+    <div class="admin-container" id="adminPanel">
         <div class="header">
             <h1>🎯 Admin Panel</h1>
             <p>Manage companies competing in the Inbound Pitch Competition</p>
@@ -361,14 +509,115 @@
     <script>
         // Configuration
         const API_BASE_URL = 'https://inboundvoting-production.up.railway.app/api';
+        const ADMIN_PASSWORD = 'robrocks'; // Admin password
 
-        // Load initial data
+        // Authentication state
+        let isAuthenticated = false;
+
+        // DOM Elements
+        const loginScreen = document.getElementById('loginScreen');
+        const adminPanel = document.getElementById('adminPanel');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const loginForm = document.getElementById('loginForm');
+
+        // Check authentication on page load
         document.addEventListener('DOMContentLoaded', function() {
-            refreshData();
+            checkAuthentication();
+            setupEventListeners();
         });
 
-        // Refresh all data
+        // Check if user is already authenticated
+        function checkAuthentication() {
+            const authToken = sessionStorage.getItem('adminAuthenticated');
+            if (authToken === 'true') {
+                showAdminPanel();
+            } else {
+                showLoginScreen();
+            }
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            loginForm.addEventListener('submit', handleLogin);
+            
+            // Auto-focus password field
+            document.getElementById('password').focus();
+            
+            // Clear error on input
+            document.getElementById('password').addEventListener('input', function() {
+                document.getElementById('loginError').innerHTML = '';
+            });
+        }
+
+        // Handle login form submission
+        async function handleLogin(e) {
+            e.preventDefault();
+            
+            const password = document.getElementById('password').value;
+            
+            if (password === ADMIN_PASSWORD) {
+                // Authentication successful
+                sessionStorage.setItem('adminAuthenticated', 'true');
+                isAuthenticated = true;
+                showAdminPanel();
+                await refreshData();
+            } else {
+                // Authentication failed
+                showLoginError('Incorrect password. Please try again.');
+                document.getElementById('password').value = '';
+                document.getElementById('password').focus();
+            }
+        }
+
+        // Show login error
+        function showLoginError(message) {
+            const errorDiv = document.getElementById('loginError');
+            errorDiv.innerHTML = `<div class="login-error">${message}</div>`;
+            
+            setTimeout(() => {
+                errorDiv.innerHTML = '';
+            }, 3000);
+        }
+
+        // Show admin panel
+        function showAdminPanel() {
+            isAuthenticated = true;
+            loginScreen.classList.add('hidden');
+            adminPanel.classList.add('authenticated');
+            logoutBtn.style.display = 'block';
+        }
+
+        // Show login screen
+        function showLoginScreen() {
+            isAuthenticated = false;
+            loginScreen.classList.remove('hidden');
+            adminPanel.classList.remove('authenticated');
+            logoutBtn.style.display = 'none';
+        }
+
+        // Logout function
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                sessionStorage.removeItem('adminAuthenticated');
+                showLoginScreen();
+                document.getElementById('password').value = '';
+            }
+        }
+
+        // Authentication check for API calls
+        function checkAuthForApiCall() {
+            if (!isAuthenticated) {
+                alert('Session expired. Please login again.');
+                logout();
+                return false;
+            }
+            return true;
+        }
+
+        // Refresh all data (only if authenticated)
         async function refreshData() {
+            if (!checkAuthForApiCall()) return;
+            
             await Promise.all([
                 loadCompanies(),
                 loadStats()
@@ -377,6 +626,8 @@
 
         // Load statistics
         async function loadStats() {
+            if (!checkAuthForApiCall()) return;
+            
             try {
                 const [companiesResponse, votesResponse] = await Promise.all([
                     fetch(`${API_BASE_URL}/admin/companies`),
@@ -399,6 +650,8 @@
 
         // Load companies list
         async function loadCompanies() {
+            if (!checkAuthForApiCall()) return;
+            
             try {
                 const response = await fetch(`${API_BASE_URL}/admin/companies`);
                 const companies = await response.json();
@@ -439,48 +692,57 @@
             }
         }
 
-        // Add new company
-        document.getElementById('addCompanyForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const formData = new FormData(e.target);
-            const companyData = {
-                name: formData.get('companyName').trim(),
-                website: formData.get('companyWebsite').trim()
-            };
+        // Add new company form handler
+        document.addEventListener('DOMContentLoaded', function() {
+            const addCompanyForm = document.getElementById('addCompanyForm');
+            if (addCompanyForm) {
+                addCompanyForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    
+                    if (!checkAuthForApiCall()) return;
+                    
+                    const formData = new FormData(e.target);
+                    const companyData = {
+                        name: formData.get('companyName').trim(),
+                        website: formData.get('companyWebsite').trim()
+                    };
 
-            if (!companyData.name) {
-                showMessage('addMessage', 'Company name is required', 'error');
-                return;
-            }
+                    if (!companyData.name) {
+                        showMessage('addMessage', 'Company name is required', 'error');
+                        return;
+                    }
 
-            try {
-                const response = await fetch(`${API_BASE_URL}/admin/companies`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(companyData)
+                    try {
+                        const response = await fetch(`${API_BASE_URL}/admin/companies`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(companyData)
+                        });
+
+                        const result = await response.json();
+
+                        if (response.ok) {
+                            showMessage('addMessage', `Company "${companyData.name}" added successfully!`, 'success');
+                            e.target.reset();
+                            await refreshData();
+                        } else {
+                            showMessage('addMessage', result.error || 'Failed to add company', 'error');
+                        }
+
+                    } catch (error) {
+                        console.error('Error adding company:', error);
+                        showMessage('addMessage', 'Network error. Please try again.', 'error');
+                    }
                 });
-
-                const result = await response.json();
-
-                if (response.ok) {
-                    showMessage('addMessage', `Company "${companyData.name}" added successfully!`, 'success');
-                    e.target.reset();
-                    await refreshData();
-                } else {
-                    showMessage('addMessage', result.error || 'Failed to add company', 'error');
-                }
-
-            } catch (error) {
-                console.error('Error adding company:', error);
-                showMessage('addMessage', 'Network error. Please try again.', 'error');
             }
         });
 
         // Deactivate company
         async function deactivateCompany(id, name) {
+            if (!checkAuthForApiCall()) return;
+            
             if (!confirm(`Are you sure you want to deactivate "${name}"? This will remove it from the voting form, but preserve existing votes.`)) {
                 return;
             }
@@ -507,6 +769,8 @@
 
         // Reactivate company
         async function reactivateCompany(id, name) {
+            if (!checkAuthForApiCall()) return;
+            
             if (!confirm(`Reactivate "${name}"? It will appear in the voting form again.`)) {
                 return;
             }
@@ -541,8 +805,24 @@
             }, 5000);
         }
 
-        // Auto-refresh every 30 seconds
-        setInterval(refreshData, 30000);
+        // Auto-refresh every 30 seconds (only if authenticated)
+        setInterval(() => {
+            if (isAuthenticated) {
+                refreshData();
+            }
+        }, 30000);
+
+        // Handle page refresh/navigation
+        window.addEventListener('beforeunload', function() {
+            // Session storage will persist until browser tab is closed
+        });
+
+        // Prevent right-click context menu on login screen (optional security measure)
+        document.addEventListener('contextmenu', function(e) {
+            if (!isAuthenticated) {
+                e.preventDefault();
+            }
+        });
     </script>
 </body>
 </html>
