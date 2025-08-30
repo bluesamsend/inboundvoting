@@ -187,6 +187,13 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
+
+        .dropdown-loading {
+            color: #666;
+            font-style: italic;
+            padding: 15px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -214,9 +221,7 @@
             <div class="form-group">
                 <label for="companyVote">Vote for Company <span class="required">*</span></label>
                 <select id="companyVote" name="companyVote" required>
-                    <option value="">Select a company to vote for</option>
-                    <option value="apple">Apple</option>
-                    <option value="google">Google</option>
+                    <option value="">Loading companies...</option>
                 </select>
             </div>
 
@@ -235,30 +240,41 @@
     </div>
 
     <script>
-        // Configuration - Update this URL when you have your backend ready
+        // Configuration
         const API_BASE_URL = 'https://inboundvoting-production.up.railway.app/api';
 
         // Load companies from backend
         async function loadCompanies() {
+            const select = document.getElementById('companyVote');
+            
             try {
-                // For now, we'll use the static options
-                // When backend is ready, uncomment this:
-                /*
                 const response = await fetch(`${API_BASE_URL}/companies`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
                 const companies = await response.json();
                 
-                const select = document.getElementById('companyVote');
+                // Clear loading option
                 select.innerHTML = '<option value="">Select a company to vote for</option>';
                 
+                // Add companies to dropdown
                 companies.forEach(company => {
                     const option = document.createElement('option');
                     option.value = company.id;
                     option.textContent = company.name;
                     select.appendChild(option);
                 });
-                */
+
+                // If no companies, show message
+                if (companies.length === 0) {
+                    select.innerHTML = '<option value="">No companies available yet</option>';
+                }
+                
             } catch (error) {
                 console.error('Error loading companies:', error);
+                select.innerHTML = '<option value="">Error loading companies</option>';
+                showError('Failed to load companies. Please refresh the page.');
             }
         }
 
@@ -287,11 +303,6 @@
             };
             
             try {
-                // For now, simulate API call
-                await new Promise(resolve => setTimeout(resolve, 1500));
-                
-                // When backend is ready, uncomment this:
-                /*
                 const response = await fetch(`${API_BASE_URL}/vote`, {
                     method: 'POST',
                     headers: {
@@ -300,30 +311,37 @@
                     body: JSON.stringify(formData)
                 });
                 
-                if (!response.ok) {
-                    throw new Error('Failed to submit vote');
+                const result = await response.json();
+                
+                if (response.ok) {
+                    // Show success message
+                    successMessage.style.display = 'block';
+                    
+                    // Reset form
+                    document.getElementById('votingForm').reset();
+                    
+                    // Reload companies (in case of changes)
+                    loadCompanies();
+                } else {
+                    throw new Error(result.error || 'Failed to submit vote');
                 }
-                */
-                
-                // Show success message
-                successMessage.style.display = 'block';
-                
-                // Reset form
-                document.getElementById('votingForm').reset();
-                
-                // Log vote data (for testing)
-                console.log('Vote submitted:', formData);
                 
             } catch (error) {
                 console.error('Error submitting vote:', error);
-                errorMessage.style.display = 'block';
-                errorMessage.textContent = '❌ Unable to submit your vote. Please try again.';
+                showError(error.message || 'Unable to submit your vote. Please try again.');
             } finally {
                 // Reset button
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = 'Cast Your Vote';
             }
         });
+
+        // Show error message
+        function showError(message) {
+            const errorMessage = document.getElementById('errorMessage');
+            errorMessage.textContent = `❌ ${message}`;
+            errorMessage.style.display = 'block';
+        }
 
         // Load companies when page loads
         document.addEventListener('DOMContentLoaded', loadCompanies);
@@ -340,6 +358,9 @@
             }
             e.target.value = value;
         });
+
+        // Reload companies every 30 seconds to catch new additions
+        setInterval(loadCompanies, 30000);
     </script>
 </body>
 </html>
