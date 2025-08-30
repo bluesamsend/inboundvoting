@@ -94,11 +94,6 @@
             cursor: pointer;
         }
 
-        .video-input {
-            background: #f0f7ff;
-            border-color: #1976d2;
-        }
-
         .file-info {
             font-size: 12px;
             color: #666;
@@ -208,19 +203,6 @@
         }
 
         .company-website:hover {
-            text-decoration: underline;
-        }
-
-        .company-video {
-            color: #dc2626;
-            text-decoration: none;
-            font-size: 14px;
-            margin-bottom: 5px;
-            display: block;
-            font-weight: 500;
-        }
-
-        .company-video:hover {
             text-decoration: underline;
         }
 
@@ -407,11 +389,6 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <label for="videoUrl">Link to video (optional)</label>
-                        <input type="url" id="videoUrl" name="video_url" placeholder="https://youtube.com/watch?v=..." class="video-input">
-                        <div class="file-info">Link to pitch video (YouTube, Vimeo, etc.)</div>
-                    </div>
-                    <div class="form-group">
                         <label for="companyLogo">Logo (optional)</label>
                         <input type="file" id="companyLogo" name="logo" accept="image/*" class="file-input">
                         <div class="file-info">Max size: 5MB. Formats: JPG, PNG, GIF, WebP</div>
@@ -498,7 +475,6 @@
                         <div class="company-info">
                             <div class="company-name">${company.name}</div>
                             ${company.website ? `<a href="${company.website}" class="company-website" target="_blank">${company.website}</a>` : ''}
-                            ${company.video_url ? `<a href="${company.video_url}" class="company-video" target="_blank">🎥 Pitch Video</a>` : ''}
                             <div class="company-stats">
                                 Votes: ${company.vote_count} | 
                                 Added: ${new Date(company.created_at).toLocaleDateString()}
@@ -528,20 +504,10 @@
         document.getElementById('addCompanyForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            // Clear any previous messages
-            document.getElementById('addMessage').innerHTML = '';
-            
             const formData = new FormData(e.target);
-            const companyName = formData.get('companyName');
             
-            console.log('Form data:', {
-                name: companyName,
-                website: formData.get('companyWebsite'),
-                video: formData.get('video_url'),
-                logo: formData.get('logo')
-            });
-            
-            if (!companyName || companyName.trim() === '') {
+            const companyName = formData.get('companyName').trim();
+            if (!companyName) {
                 showMessage('addMessage', 'Company name is required', 'error');
                 return;
             }
@@ -549,11 +515,10 @@
             try {
                 const response = await fetch(`${API_BASE_URL}/admin/companies`, {
                     method: 'POST',
-                    body: formData
+                    body: formData // Send FormData directly for multipart/form-data
                 });
 
                 const result = await response.json();
-                console.log('Server response:', result);
 
                 if (response.ok) {
                     showMessage('addMessage', `Company "${companyName}" added successfully!`, 'success');
@@ -564,7 +529,7 @@
                 }
 
             } catch (error) {
-                console.error('Network error:', error);
+                console.error('Error adding company:', error);
                 showMessage('addMessage', 'Network error. Please try again.', 'error');
             }
         });
