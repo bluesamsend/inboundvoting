@@ -315,8 +315,8 @@
         <!-- Quick Actions -->
         <div class="quick-actions">
             <a href="#" class="btn btn-primary" onclick="refreshData()">🔄 Refresh Data</a>
-            <a href="leaderboard.html" class="btn btn-primary" target="_blank">📊 View Leaderboard</a>
-            <a href="voting-form.html" class="btn btn-primary" target="_blank">🗳️ View Voting Form</a>
+            <a href="/leaderboard" class="btn btn-primary" target="_blank">📊 View Leaderboard</a>
+            <a href="/voting" class="btn btn-primary" target="_blank">🗳️ View Voting Form</a>
         </div>
 
         <!-- Add New Company -->
@@ -360,7 +360,7 @@
 
     <script>
         // Configuration
-        const API_BASE_URL = 'https://inboundvoting-production.up.railway.app/api';
+        const API_BASE_URL = 'REPLACE_WITH_YOUR_RAILWAY_URL/api';
 
         // Load initial data
         document.addEventListener('DOMContentLoaded', function() {
