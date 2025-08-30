@@ -85,6 +85,25 @@
             background: white;
         }
 
+        .phone-input-container {
+            display: flex;
+            gap: 10px;
+        }
+
+        .country-select {
+            flex: 0 0 120px;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 12px center;
+            background-repeat: no-repeat;
+            background-size: 16px;
+            cursor: pointer;
+        }
+
+        .phone-input-container input[type="tel"] {
+            flex: 1;
+        }
+
         .form-group input:focus,
         .form-group select:focus {
             outline: none;
@@ -215,7 +234,41 @@
 
             <div class="form-group">
                 <label for="voterPhone">Phone Number <span class="required">*</span></label>
-                <input type="tel" id="voterPhone" name="voterPhone" required placeholder="(555) 123-4567">
+                <div class="phone-input-container">
+                    <select id="countryCode" name="countryCode" class="country-select">
+                        <option value="+1" data-flag="🇺🇸">🇺🇸 +1</option>
+                        <option value="+1" data-flag="🇨🇦">🇨🇦 +1</option>
+                        <option value="+44" data-flag="🇬🇧">🇬🇧 +44</option>
+                        <option value="+33" data-flag="🇫🇷">🇫🇷 +33</option>
+                        <option value="+49" data-flag="🇩🇪">🇩🇪 +49</option>
+                        <option value="+39" data-flag="🇮🇹">🇮🇹 +39</option>
+                        <option value="+34" data-flag="🇪🇸">🇪🇸 +34</option>
+                        <option value="+31" data-flag="🇳🇱">🇳🇱 +31</option>
+                        <option value="+46" data-flag="🇸🇪">🇸🇪 +46</option>
+                        <option value="+47" data-flag="🇳🇴">🇳🇴 +47</option>
+                        <option value="+45" data-flag="🇩🇰">🇩🇰 +45</option>
+                        <option value="+358" data-flag="🇫🇮">🇫🇮 +358</option>
+                        <option value="+41" data-flag="🇨🇭">🇨🇭 +41</option>
+                        <option value="+43" data-flag="🇦🇹">🇦🇹 +43</option>
+                        <option value="+32" data-flag="🇧🇪">🇧🇪 +32</option>
+                        <option value="+351" data-flag="🇵🇹">🇵🇹 +351</option>
+                        <option value="+353" data-flag="🇮🇪">🇮🇪 +353</option>
+                        <option value="+61" data-flag="🇦🇺">🇦🇺 +61</option>
+                        <option value="+64" data-flag="🇳🇿">🇳🇿 +64</option>
+                        <option value="+81" data-flag="🇯🇵">🇯🇵 +81</option>
+                        <option value="+82" data-flag="🇰🇷">🇰🇷 +82</option>
+                        <option value="+86" data-flag="🇨🇳">🇨🇳 +86</option>
+                        <option value="+91" data-flag="🇮🇳">🇮🇳 +91</option>
+                        <option value="+65" data-flag="🇸🇬">🇸🇬 +65</option>
+                        <option value="+852" data-flag="🇭🇰">🇭🇰 +852</option>
+                        <option value="+55" data-flag="🇧🇷">🇧🇷 +55</option>
+                        <option value="+52" data-flag="🇲🇽">🇲🇽 +52</option>
+                        <option value="+54" data-flag="🇦🇷">🇦🇷 +54</option>
+                        <option value="+56" data-flag="🇨🇱">🇨🇱 +56</option>
+                        <option value="+57" data-flag="🇨🇴">🇨🇴 +57</option>
+                    </select>
+                    <input type="tel" id="voterPhone" name="voterPhone" required placeholder="123 456 7890">
+                </div>
             </div>
 
             <div class="form-group">
@@ -295,10 +348,14 @@
             submitBtn.innerHTML = '<span class="loading"></span>Submitting Vote...';
             
             // Get form data
+            const countryCode = document.getElementById('countryCode').value;
+            const phoneNumber = document.getElementById('voterPhone').value;
+            const fullPhoneNumber = countryCode + phoneNumber.replace(/\D/g, '');
+            
             const formData = {
                 voterName: document.getElementById('voterName').value,
                 voterEmail: document.getElementById('voterEmail').value,
-                voterPhone: document.getElementById('voterPhone').value,
+                voterPhone: fullPhoneNumber,
                 companyVote: document.getElementById('companyVote').value
             };
             
@@ -348,17 +405,37 @@
         // Load companies when page loads
         document.addEventListener('DOMContentLoaded', loadCompanies);
 
-        // Phone number formatting
+        // Phone number formatting (without country code)
         document.getElementById('voterPhone').addEventListener('input', function(e) {
             let value = e.target.value.replace(/\D/g, '');
-            if (value.length >= 6) {
-                value = value.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
-            } else if (value.length >= 3) {
-                value = value.replace(/(\d{3})(\d{3})/, '($1) $2');
-            } else if (value.length > 0) {
-                value = value.replace(/(\d{3})/, '($1)');
+            
+            // Format based on selected country (US/Canada format by default)
+            const countryCode = document.getElementById('countryCode').value;
+            
+            if (countryCode === '+1') {
+                // US/Canada format: (123) 456-7890
+                if (value.length >= 6) {
+                    value = value.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
+                } else if (value.length >= 3) {
+                    value = value.replace(/(\d{3})(\d{3})/, '($1) $2');
+                } else if (value.length > 0) {
+                    value = value.replace(/(\d{3})/, '($1)');
+                }
+            } else {
+                // International format: just add spaces every 3-4 digits
+                if (value.length > 3) {
+                    value = value.match(/.{1,3}/g).join(' ');
+                }
             }
+            
             e.target.value = value;
+        });
+
+        // Update phone formatting when country changes
+        document.getElementById('countryCode').addEventListener('change', function() {
+            const phoneInput = document.getElementById('voterPhone');
+            const event = new Event('input');
+            phoneInput.dispatchEvent(event);
         });
 
         // Reload companies every 30 seconds to catch new additions
