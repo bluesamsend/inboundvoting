@@ -32,32 +32,27 @@ const initDB = async () => {
       )
     `);
 
+    // Create new votes table with constraints built-in
     await pool.query(`
-      CREATE TABLE IF NOT EXISTS votes (
+      CREATE TABLE IF NOT EXISTS votes_new (
         id SERIAL PRIMARY KEY,
         voter_name VARCHAR(255) NOT NULL,
-        voter_email VARCHAR(255) NOT NULL,
-        voter_phone VARCHAR(20) NOT NULL,
+        voter_email VARCHAR(255) NOT NULL UNIQUE,
+        voter_phone VARCHAR(20) NOT NULL UNIQUE,
         company_id INTEGER REFERENCES companies(id),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
 
-    // Add unique constraints to prevent duplicates
+    // If the old votes table exists, we'll use the new one instead
     try {
-      await pool.query(`ALTER TABLE votes ADD CONSTRAINT unique_email UNIQUE (voter_email)`);
-      console.log('Added unique email constraint');
+      await pool.query(`DROP TABLE IF EXISTS votes_old`);
+      await pool.query(`ALTER TABLE votes RENAME TO votes_old`);
+      await pool.query(`ALTER TABLE votes_new RENAME TO votes`);
+      console.log('Created new votes table with unique constraints');
     } catch (error) {
-      // Constraint might already exist
-      console.log('Email constraint already exists or failed to add');
-    }
-
-    try {
-      await pool.query(`ALTER TABLE votes ADD CONSTRAINT unique_phone UNIQUE (voter_phone)`);
-      console.log('Added unique phone constraint');
-    } catch (error) {
-      // Constraint might already exist  
-      console.log('Phone constraint already exists or failed to add');
+      // If renaming fails, the new table is already named 'votes'
+      console.log('Votes table setup completed');
     }
 
     // Insert default companies if they don't exist
