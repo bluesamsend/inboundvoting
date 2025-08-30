@@ -120,11 +120,39 @@ app.get('/api/companies', async (req, res) => {
   }
 });
 
-// Submit a vote
+// Function to send vote data to Google Sheets
+async function sendToGoogleSheets(voteData) {
+  const GOOGLE_APPS_SCRIPT_URL = process.env.GOOGLE_SHEETS_WEBHOOK_URL || 'YOUR_APPS_SCRIPT_URL_HERE';
+  
+  if (GOOGLE_APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_URL_HERE') {
+    console.log('Google Sheets webhook URL not configured');
+    return;
+  }
+
+  try {
+    const response = await fetch(GOOGLE_APPS_SCRIPT_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(voteData)
+    });
+
+    if (response.ok) {
+      console.log('Successfully sent vote to Google Sheets');
+    } else {
+      console.error('Failed to send to Google Sheets:', response.status);
+    }
+  } catch (error) {
+    console.error('Error sending to Google Sheets:', error);
+  }
+}
+
+// Submit a vote - Simple version with database constraints + Google Sheets
 app.post('/api/vote', async (req, res) => {
   const { voterName, voterEmail, voterPhone, companyVote } = req.body;
 
-  // Validation
+  // Basic validation
   if (!voterName || !voterEmail || !voterPhone || !companyVote) {
     return res.status(400).json({ error: 'All fields are required' });
   }
@@ -135,20 +163,13 @@ app.post('/api/vote', async (req, res) => {
     return res.status(400).json({ error: 'Invalid email format' });
   }
 
+  const cleanEmail = voterEmail.toLowerCase().trim();
+  const cleanPhone = voterPhone.trim();
+
   try {
-    // Check if email has already voted
-    const existingVote = await pool.query(
-      'SELECT id FROM votes WHERE voter_email = $1',
-      [voterEmail]
-    );
-
-    if (existingVote.rows.length > 0) {
-      return res.status(400).json({ error: 'This email has already voted' });
-    }
-
     // Verify company exists and is active
     const company = await pool.query(
-      'SELECT id FROM companies WHERE id = $1 AND active = true',
+      'SELECT id, name, website FROM companies WHERE id = $1 AND active = true',
       [companyVote]
     );
 
@@ -156,19 +177,47 @@ app.post('/api/vote', async (req, res) => {
       return res.status(400).json({ error: 'Invalid company selection' });
     }
 
-    // Insert the vote
+    const selectedCompany = company.rows[0];
+
+    // Try to insert - database constraints will prevent duplicates
     const result = await pool.query(
       'INSERT INTO votes (voter_name, voter_email, voter_phone, company_id) VALUES ($1, $2, $3, $4) RETURNING id',
-      [voterName, voterEmail, voterPhone, companyVote]
+      [voterName.trim(), cleanEmail, cleanPhone, companyVote]
     );
+
+    const voteId = result.rows[0].id;
+
+    // Send to Google Sheets (don't wait for response)
+    sendToGoogleSheets({
+      voterName: voterName.trim(),
+      voterEmail: cleanEmail,
+      voterPhone: cleanPhone,
+      companyName: selectedCompany.name,
+      companyWebsite: selectedCompany.website,
+      voteId: voteId
+    }).catch(error => {
+      console.error('Failed to send to Google Sheets:', error);
+    });
 
     res.status(201).json({ 
       message: 'Vote submitted successfully',
-      voteId: result.rows[0].id 
+      voteId: voteId 
     });
 
   } catch (error) {
-    console.error('Error submitting vote:', error);
+    console.error('Vote submission error:', error);
+    
+    // Check for duplicate constraint violations
+    if (error.code === '23505') { // PostgreSQL unique constraint violation
+      if (error.constraint === 'unique_email') {
+        return res.status(400).json({ error: 'This email address has already been used to vote' });
+      } else if (error.constraint === 'unique_phone') {
+        return res.status(400).json({ error: 'This phone number has already been used to vote' });
+      } else {
+        return res.status(400).json({ error: 'You have already voted' });
+      }
+    }
+    
     res.status(500).json({ error: 'Failed to submit vote' });
   }
 });
@@ -216,7 +265,7 @@ app.get('/api/leaderboard', async (req, res) => {
   }
 });
 
-// Admin Routes (you might want to add authentication later)
+// Admin Routes
 
 // Helper function to generate logo URL from website
 const generateLogoUrl = (website) => {
