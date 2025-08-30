@@ -530,8 +530,8 @@
             
             const formData = new FormData(e.target);
             
-            const companyName = formData.get('companyName').trim();
-            if (!companyName) {
+            const companyName = formData.get('companyName');
+            if (!companyName || companyName.trim() === '') {
                 showMessage('addMessage', 'Company name is required', 'error');
                 return;
             }
