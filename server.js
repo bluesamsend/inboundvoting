@@ -62,6 +62,7 @@ const initDB = async () => {
         id SERIAL PRIMARY KEY,
         name VARCHAR(255) NOT NULL UNIQUE,
         website VARCHAR(255),
+        video_url VARCHAR(500),
         logo_url VARCHAR(500),
         active BOOLEAN DEFAULT true,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -266,6 +267,7 @@ app.get('/api/leaderboard', async (req, res) => {
         c.id,
         c.name,
         c.website,
+        c.video_url,
         c.logo_url,
         COUNT(v.id) as vote_count,
         ROUND(
@@ -275,7 +277,7 @@ app.get('/api/leaderboard', async (req, res) => {
       FROM companies c
       LEFT JOIN votes v ON c.id = v.company_id
       WHERE c.active = true
-      GROUP BY c.id, c.name, c.website, c.logo_url
+      GROUP BY c.id, c.name, c.website, c.video_url, c.logo_url
       ORDER BY vote_count DESC, c.name
     `);
 
@@ -284,6 +286,7 @@ app.get('/api/leaderboard', async (req, res) => {
       id: row.id,
       name: row.name,
       website: row.website,
+      videoUrl: row.video_url,
       logoUrl: row.logo_url,
       votes: parseInt(row.vote_count),
       percentage: parseFloat(row.percentage) || 0
@@ -318,7 +321,7 @@ const generateLogoUrl = (website) => {
 
 // Add a new company with optional logo upload
 app.post('/api/admin/companies', upload.single('logo'), async (req, res) => {
-  const { name, website } = req.body;
+  const { name, website, video_url } = req.body;
 
   if (!name || name.trim() === '') {
     return res.status(400).json({ error: 'Company name is required' });
@@ -337,8 +340,8 @@ app.post('/api/admin/companies', upload.single('logo'), async (req, res) => {
 
   try {
     const result = await pool.query(
-      'INSERT INTO companies (name, website, logo_url) VALUES ($1, $2, $3) RETURNING *',
-      [name.trim(), website?.trim() || null, logoUrl]
+      'INSERT INTO companies (name, website, video_url, logo_url) VALUES ($1, $2, $3, $4) RETURNING *',
+      [name.trim(), website?.trim() || null, video_url?.trim() || null, logoUrl]
     );
 
     res.status(201).json({ 
