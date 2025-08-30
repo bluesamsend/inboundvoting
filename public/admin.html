@@ -436,7 +436,7 @@
 
     <script>
         // Configuration
-        const API_BASE_URL = 'https://inboundvoting-production.up.railway.app/api';
+        const API_BASE_URL = 'REPLACE_WITH_YOUR_RAILWAY_URL/api';
 
         // Load initial data
         document.addEventListener('DOMContentLoaded', function() {
@@ -528,9 +528,19 @@
         document.getElementById('addCompanyForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            const formData = new FormData(e.target);
+            // Clear any previous messages
+            document.getElementById('addMessage').innerHTML = '';
             
+            const formData = new FormData(e.target);
             const companyName = formData.get('companyName');
+            
+            console.log('Form data:', {
+                name: companyName,
+                website: formData.get('companyWebsite'),
+                video: formData.get('video_url'),
+                logo: formData.get('logo')
+            });
+            
             if (!companyName || companyName.trim() === '') {
                 showMessage('addMessage', 'Company name is required', 'error');
                 return;
@@ -539,10 +549,11 @@
             try {
                 const response = await fetch(`${API_BASE_URL}/admin/companies`, {
                     method: 'POST',
-                    body: formData // Send FormData directly for multipart/form-data
+                    body: formData
                 });
 
                 const result = await response.json();
+                console.log('Server response:', result);
 
                 if (response.ok) {
                     showMessage('addMessage', `Company "${companyName}" added successfully!`, 'success');
@@ -553,7 +564,7 @@
                 }
 
             } catch (error) {
-                console.error('Error adding company:', error);
+                console.error('Network error:', error);
                 showMessage('addMessage', 'Network error. Please try again.', 'error');
             }
         });
