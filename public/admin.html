@@ -168,15 +168,7 @@
             border-color: #007AFF;
         }
 
-        .company-logo {
-            width: 60px;
-            height: 60px;
-            border-radius: 10px;
-            object-fit: contain;
-            background: #f8f9fa;
-            border: 1px solid #e9ecef;
-            padding: 8px;
-        }
+
 
         .company-info {
             flex: 1;
@@ -368,7 +360,7 @@
 
     <script>
         // Configuration
-        const API_BASE_URL = 'https://inboundvoting-production.up.railway.app/api';
+        const API_BASE_URL = 'REPLACE_WITH_YOUR_RAILWAY_URL/api';
 
         // Load initial data
         document.addEventListener('DOMContentLoaded', function() {
@@ -420,11 +412,6 @@
 
                 companiesList.innerHTML = companies.map(company => `
                     <div class="company-card ${company.active ? 'active' : 'inactive'} fade-in">
-                        <img src="${company.logo_url || '/api/placeholder/60/60'}" 
-                             alt="${company.name}" 
-                             class="company-logo"
-                             onerror="this.src='/api/placeholder/60/60'">
-                        
                         <div class="company-info">
                             <div class="company-name">${company.name}</div>
                             ${company.website ? `<a href="${company.website}" class="company-website" target="_blank">${company.website}</a>` : ''}
