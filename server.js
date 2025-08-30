@@ -43,6 +43,23 @@ const initDB = async () => {
       )
     `);
 
+    // Add unique constraints to prevent duplicates
+    try {
+      await pool.query(`ALTER TABLE votes ADD CONSTRAINT unique_email UNIQUE (voter_email)`);
+      console.log('Added unique email constraint');
+    } catch (error) {
+      // Constraint might already exist
+      console.log('Email constraint already exists or failed to add');
+    }
+
+    try {
+      await pool.query(`ALTER TABLE votes ADD CONSTRAINT unique_phone UNIQUE (voter_phone)`);
+      console.log('Added unique phone constraint');
+    } catch (error) {
+      // Constraint might already exist  
+      console.log('Phone constraint already exists or failed to add');
+    }
+
     // Insert default companies if they don't exist
     await pool.query(`
       INSERT INTO companies (name, website, logo_url) 
