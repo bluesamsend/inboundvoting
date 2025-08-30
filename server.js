@@ -1,8 +1,6 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-const multer = require('multer');
-const fs = require('fs');
 const { Pool } = require('pg');
 require('dotenv').config();
 
@@ -13,40 +11,6 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public'))); // Serve static files from public folder
-app.use('/uploads', express.static(path.join(__dirname, 'uploads'))); // Serve uploaded files
-
-// Create uploads directory if it doesn't exist
-const uploadsDir = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
-}
-
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, uploadsDir);
-  },
-  filename: function (req, file, cb) {
-    // Generate unique filename with timestamp and original extension
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, 'company-' + uniqueSuffix + path.extname(file.originalname));
-  }
-});
-
-const upload = multer({
-  storage: storage,
-  limits: {
-    fileSize: 5 * 1024 * 1024 // 5MB limit
-  },
-  fileFilter: function (req, file, cb) {
-    // Check file type
-    if (file.mimetype.startsWith('image/')) {
-      cb(null, true);
-    } else {
-      cb(new Error('Only image files are allowed!'), false);
-    }
-  }
-});
 
 // Database connection
 const pool = new Pool({
@@ -62,7 +26,6 @@ const initDB = async () => {
         id SERIAL PRIMARY KEY,
         name VARCHAR(255) NOT NULL UNIQUE,
         website VARCHAR(255),
-        video_url VARCHAR(500),
         logo_url VARCHAR(500),
         active BOOLEAN DEFAULT true,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -157,39 +120,11 @@ app.get('/api/companies', async (req, res) => {
   }
 });
 
-// Function to send vote data to Google Sheets
-async function sendToGoogleSheets(voteData) {
-  const GOOGLE_APPS_SCRIPT_URL = process.env.GOOGLE_SHEETS_WEBHOOK_URL || 'YOUR_APPS_SCRIPT_URL_HERE';
-  
-  if (GOOGLE_APPS_SCRIPT_URL === 'YOUR_APPS_SCRIPT_URL_HERE') {
-    console.log('Google Sheets webhook URL not configured');
-    return;
-  }
-
-  try {
-    const response = await fetch(GOOGLE_APPS_SCRIPT_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(voteData)
-    });
-
-    if (response.ok) {
-      console.log('Successfully sent vote to Google Sheets');
-    } else {
-      console.error('Failed to send to Google Sheets:', response.status);
-    }
-  } catch (error) {
-    console.error('Error sending to Google Sheets:', error);
-  }
-}
-
-// Submit a vote - Simple version with database constraints + Google Sheets
+// Submit a vote
 app.post('/api/vote', async (req, res) => {
   const { voterName, voterEmail, voterPhone, companyVote } = req.body;
 
-  // Basic validation
+  // Validation
   if (!voterName || !voterEmail || !voterPhone || !companyVote) {
     return res.status(400).json({ error: 'All fields are required' });
   }
@@ -200,13 +135,20 @@ app.post('/api/vote', async (req, res) => {
     return res.status(400).json({ error: 'Invalid email format' });
   }
 
-  const cleanEmail = voterEmail.toLowerCase().trim();
-  const cleanPhone = voterPhone.trim();
-
   try {
+    // Check if email has already voted
+    const existingVote = await pool.query(
+      'SELECT id FROM votes WHERE voter_email = $1',
+      [voterEmail]
+    );
+
+    if (existingVote.rows.length > 0) {
+      return res.status(400).json({ error: 'This email has already voted' });
+    }
+
     // Verify company exists and is active
     const company = await pool.query(
-      'SELECT id, name, website FROM companies WHERE id = $1 AND active = true',
+      'SELECT id FROM companies WHERE id = $1 AND active = true',
       [companyVote]
     );
 
@@ -214,47 +156,19 @@ app.post('/api/vote', async (req, res) => {
       return res.status(400).json({ error: 'Invalid company selection' });
     }
 
-    const selectedCompany = company.rows[0];
-
-    // Try to insert - database constraints will prevent duplicates
+    // Insert the vote
     const result = await pool.query(
       'INSERT INTO votes (voter_name, voter_email, voter_phone, company_id) VALUES ($1, $2, $3, $4) RETURNING id',
-      [voterName.trim(), cleanEmail, cleanPhone, companyVote]
+      [voterName, voterEmail, voterPhone, companyVote]
     );
-
-    const voteId = result.rows[0].id;
-
-    // Send to Google Sheets (don't wait for response)
-    sendToGoogleSheets({
-      voterName: voterName.trim(),
-      voterEmail: cleanEmail,
-      voterPhone: cleanPhone,
-      companyName: selectedCompany.name,
-      companyWebsite: selectedCompany.website,
-      voteId: voteId
-    }).catch(error => {
-      console.error('Failed to send to Google Sheets:', error);
-    });
 
     res.status(201).json({ 
       message: 'Vote submitted successfully',
-      voteId: voteId 
+      voteId: result.rows[0].id 
     });
 
   } catch (error) {
-    console.error('Vote submission error:', error);
-    
-    // Check for duplicate constraint violations
-    if (error.code === '23505') { // PostgreSQL unique constraint violation
-      if (error.constraint === 'unique_email') {
-        return res.status(400).json({ error: 'This email address has already been used to vote' });
-      } else if (error.constraint === 'unique_phone') {
-        return res.status(400).json({ error: 'This phone number has already been used to vote' });
-      } else {
-        return res.status(400).json({ error: 'You have already voted' });
-      }
-    }
-    
+    console.error('Error submitting vote:', error);
     res.status(500).json({ error: 'Failed to submit vote' });
   }
 });
@@ -267,7 +181,6 @@ app.get('/api/leaderboard', async (req, res) => {
         c.id,
         c.name,
         c.website,
-        c.video_url,
         c.logo_url,
         COUNT(v.id) as vote_count,
         ROUND(
@@ -277,7 +190,7 @@ app.get('/api/leaderboard', async (req, res) => {
       FROM companies c
       LEFT JOIN votes v ON c.id = v.company_id
       WHERE c.active = true
-      GROUP BY c.id, c.name, c.website, c.video_url, c.logo_url
+      GROUP BY c.id, c.name, c.website, c.logo_url
       ORDER BY vote_count DESC, c.name
     `);
 
@@ -286,7 +199,6 @@ app.get('/api/leaderboard', async (req, res) => {
       id: row.id,
       name: row.name,
       website: row.website,
-      videoUrl: row.video_url,
       logoUrl: row.logo_url,
       votes: parseInt(row.vote_count),
       percentage: parseFloat(row.percentage) || 0
@@ -304,7 +216,7 @@ app.get('/api/leaderboard', async (req, res) => {
   }
 });
 
-// Admin Routes
+// Admin Routes (you might want to add authentication later)
 
 // Helper function to generate logo URL from website
 const generateLogoUrl = (website) => {
@@ -319,29 +231,20 @@ const generateLogoUrl = (website) => {
   }
 };
 
-// Add a new company with optional logo upload
-app.post('/api/admin/companies', upload.single('logo'), async (req, res) => {
-  const { name, website, video_url } = req.body;
+// Add a new company
+app.post('/api/admin/companies', async (req, res) => {
+  const { name, website } = req.body;
 
   if (!name || name.trim() === '') {
     return res.status(400).json({ error: 'Company name is required' });
   }
 
-  let logoUrl = null;
-  
-  // If logo was uploaded, use the uploaded file
-  if (req.file) {
-    logoUrl = `/uploads/${req.file.filename}`;
-  } 
-  // Otherwise, try to generate from website if provided
-  else if (website) {
-    logoUrl = generateLogoUrl(website);
-  }
+  const logoUrl = generateLogoUrl(website);
 
   try {
     const result = await pool.query(
-      'INSERT INTO companies (name, website, video_url, logo_url) VALUES ($1, $2, $3, $4) RETURNING *',
-      [name.trim(), website?.trim() || null, video_url?.trim() || null, logoUrl]
+      'INSERT INTO companies (name, website, logo_url) VALUES ($1, $2, $3) RETURNING *',
+      [name.trim(), website?.trim() || null, logoUrl]
     );
 
     res.status(201).json({ 
@@ -350,13 +253,6 @@ app.post('/api/admin/companies', upload.single('logo'), async (req, res) => {
     });
 
   } catch (error) {
-    // If database insertion fails, clean up uploaded file
-    if (req.file) {
-      fs.unlink(req.file.path, (err) => {
-        if (err) console.error('Error deleting uploaded file:', err);
-      });
-    }
-    
     if (error.code === '23505') { // Unique constraint violation
       return res.status(400).json({ error: 'Company already exists' });
     }
@@ -431,62 +327,6 @@ app.get('/api/admin/votes', async (req, res) => {
   } catch (error) {
     console.error('Error fetching votes:', error);
     res.status(500).json({ error: 'Failed to fetch votes' });
-  }
-});
-
-// Update company logo
-app.patch('/api/admin/companies/:id/logo', upload.single('logo'), async (req, res) => {
-  const { id } = req.params;
-
-  if (!req.file) {
-    return res.status(400).json({ error: 'No logo file provided' });
-  }
-
-  try {
-    // Get current company data to potentially clean up old logo
-    const currentCompany = await pool.query(
-      'SELECT logo_url FROM companies WHERE id = $1',
-      [id]
-    );
-
-    if (currentCompany.rows.length === 0) {
-      // Clean up uploaded file if company doesn't exist
-      fs.unlink(req.file.path, (err) => {
-        if (err) console.error('Error deleting uploaded file:', err);
-      });
-      return res.status(404).json({ error: 'Company not found' });
-    }
-
-    const logoUrl = `/uploads/${req.file.filename}`;
-
-    // Update company with new logo
-    const result = await pool.query(
-      'UPDATE companies SET logo_url = $1 WHERE id = $2 RETURNING *',
-      [logoUrl, id]
-    );
-
-    // Clean up old logo file if it was an uploaded file
-    const oldLogoUrl = currentCompany.rows[0].logo_url;
-    if (oldLogoUrl && oldLogoUrl.startsWith('/uploads/')) {
-      const oldFilePath = path.join(__dirname, oldLogoUrl);
-      fs.unlink(oldFilePath, (err) => {
-        if (err) console.error('Error deleting old logo file:', err);
-      });
-    }
-
-    res.json({
-      message: 'Logo updated successfully',
-      company: result.rows[0]
-    });
-
-  } catch (error) {
-    // Clean up uploaded file on error
-    fs.unlink(req.file.path, (err) => {
-      if (err) console.error('Error deleting uploaded file:', err);
-    });
-    
-    console.error('Error updating logo:', error);
-    res.status(500).json({ error: 'Failed to update logo' });
   }
 });
 
