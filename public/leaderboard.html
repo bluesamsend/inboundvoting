@@ -1,4 +1,23 @@
-<!DOCTYPE html>
+.company-logo {
+            width: 80px;
+            height: 80px;
+            border-radius: 15px;
+            object-fit: contain;
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            margin-bottom: 15px;
+            padding: 10px;
+        }
+
+        .company-logo-small {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            object-fit: contain;
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            padding: 5px;
+        }<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -12,10 +31,11 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background: #ffffff;
             min-height: 100vh;
             padding: 20px;
+            color: #1a1a1a;
         }
 
         .leaderboard-container {
@@ -29,16 +49,19 @@
         }
 
         .main-title {
-            font-size: 48px;
-            font-weight: bold;
-            color: #2d3748;
-            margin-bottom: 10px;
+            font-size: 36px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+            letter-spacing: -0.02em;
         }
 
         .subtitle {
-            font-size: 20px;
-            color: #718096;
+            font-size: 18px;
+            color: #6b7280;
             margin-bottom: 20px;
+            font-weight: 400;
+            line-height: 1.5;
         }
 
         .stats {
@@ -49,23 +72,24 @@
         }
 
         .stat-item {
-            background: white;
-            padding: 15px 25px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            background: #f8fafc;
+            padding: 20px 24px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
             text-align: center;
         }
 
         .stat-number {
-            font-size: 24px;
-            font-weight: bold;
-            color: #007AFF;
+            font-size: 28px;
+            font-weight: 700;
+            color: #1976d2;
         }
 
         .stat-label {
             font-size: 14px;
-            color: #666;
-            margin-top: 5px;
+            color: #64748b;
+            margin-top: 4px;
+            font-weight: 500;
         }
 
         .podium {
@@ -78,39 +102,39 @@
         }
 
         .podium-place {
-            background: white;
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 32px 24px;
+            border: 1px solid #e2e8f0;
             text-align: center;
             position: relative;
-            transition: transform 0.3s ease;
-            border: 3px solid transparent;
+            transition: all 0.3s ease;
         }
 
         .podium-place:hover {
-            transform: translateY(-5px);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 32px rgba(0,0,0,0.08);
         }
 
         .podium-place.first {
             order: 2;
-            height: 280px;
-            border-color: #FFD700;
-            background: linear-gradient(135deg, #fff9e6 0%, #fff3cd 100%);
+            height: 320px;
+            border-color: #1976d2;
+            background: linear-gradient(135deg, #ffffff 0%, #f0f7ff 100%);
         }
 
         .podium-place.second {
             order: 1;
-            height: 240px;
-            border-color: #C0C0C0;
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            height: 280px;
+            border-color: #64748b;
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
         }
 
         .podium-place.third {
             order: 3;
-            height: 200px;
-            border-color: #CD7F32;
-            background: linear-gradient(135deg, #fdf2e9 0%, #f4e4d6 100%);
+            height: 240px;
+            border-color: #f59e0b;
+            background: linear-gradient(135deg, #ffffff 0%, #fffbeb 100%);
         }
 
         .medal {
@@ -129,9 +153,9 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
 
-        .medal.first { background: linear-gradient(135deg, #FFD700, #FFA500); }
-        .medal.second { background: linear-gradient(135deg, #C0C0C0, #A8A8A8); }
-        .medal.third { background: linear-gradient(135deg, #CD7F32, #B8860B); }
+        .medal.first { background: linear-gradient(135deg, #1976d2, #1565c0); }
+        .medal.second { background: linear-gradient(135deg, #64748b, #475569); }
+        .medal.third { background: linear-gradient(135deg, #f59e0b, #d97706); }
 
 
 
@@ -143,17 +167,19 @@
         }
 
         .company-name {
-            font-size: 22px;
-            font-weight: bold;
-            color: #2d3748;
-            margin-bottom: 5px;
+            font-size: 20px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 6px;
+            letter-spacing: -0.01em;
         }
 
         .company-website {
             font-size: 14px;
-            color: #007AFF;
-            margin-bottom: 15px;
+            color: #1976d2;
+            margin-bottom: 16px;
             text-decoration: none;
+            font-weight: 500;
         }
 
         .company-website:hover {
@@ -162,28 +188,30 @@
 
         .vote-count {
             font-size: 32px;
-            font-weight: bold;
-            color: #007AFF;
+            font-weight: 700;
+            color: #1976d2;
+            letter-spacing: -0.02em;
         }
 
         .full-leaderboard {
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            background: #ffffff;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
             overflow: hidden;
         }
 
         .leaderboard-header {
-            background: linear-gradient(135deg, #007AFF, #005bb5);
+            background: #1976d2;
             color: white;
-            padding: 25px;
+            padding: 24px 32px;
             text-align: center;
         }
 
         .leaderboard-title {
-            font-size: 28px;
-            font-weight: bold;
-            margin-bottom: 5px;
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 0;
+            letter-spacing: -0.01em;
         }
 
         .table-header {
@@ -308,7 +336,7 @@
     <div class="leaderboard-container">
         <div class="header">
             <h1 class="main-title">Ultimate Pitch Showdown</h1>
-            <p class="subtitle">Vote For The Best Pitch At Inbound25. Sendblue Will Donate $10,000 To The Winning Business's Charity Of Choice</p>
+            <p class="subtitle">Vote For The Best Pitch At Inbound25. Sendblue Will Donate $10,000 To The Winning Businesses Charity Of Choice</p>
             <div class="stats">
                 <div class="stat-item">
                     <div class="stat-number" id="totalVotes">0</div>
@@ -414,6 +442,10 @@
                 placeDiv.innerHTML = `
                     <div class="medal ${position}">${medal}</div>
                     <div class="place-label">${label}</div>
+                    <img src="${company.logoUrl ? `https://inboundvoting-production.up.railway.app${company.logoUrl}` : '/api/placeholder/80/80'}" 
+                         alt="${company.name}" 
+                         class="company-logo"
+                         onerror="this.src='/api/placeholder/80/80'">
                     <div class="company-name">${company.name}</div>
                     ${company.website ? `<a href="${company.website}" class="company-website" target="_blank">${company.website}</a>` : ''}
                     <div class="vote-count">${company.votes}</div>
@@ -443,6 +475,10 @@
                             <div class="rank-number ${rankClass}">${company.rank}</div>
                         </div>
                         <div class="company-info">
+                            <img src="${company.logoUrl ? `https://inboundvoting-production.up.railway.app${company.logoUrl}` : '/api/placeholder/50/50'}" 
+                                 alt="${company.name}" 
+                                 class="company-logo-small"
+                                 onerror="this.src='/api/placeholder/50/50'">
                             <div class="company-details">
                                 <h3>${company.name}</h3>
                                 ${company.website ? `<a href="${company.website}" target="_blank">${company.website}</a>` : ''}
