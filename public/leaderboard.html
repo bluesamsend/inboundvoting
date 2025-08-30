@@ -284,11 +284,6 @@
             </div>
         </div>
 
-        <!-- Debug Info -->
-        <div class="debug-info" id="debugInfo">
-            Debug info will appear here...
-        </div>
-
         <div class="podium" id="podium">
             <!-- Top 3 will be inserted here -->
         </div>
@@ -309,17 +304,8 @@
         const API_BASE_URL = 'https://inboundvoting-production.up.railway.app/api';
         const REFRESH_INTERVAL = 30000; // 30 seconds
 
-        function debugLog(message) {
-            const debugElement = document.getElementById('debugInfo');
-            const timestamp = new Date().toISOString();
-            debugElement.innerHTML += `[${timestamp}] ${message}\n`;
-            debugElement.scrollTop = debugElement.scrollHeight;
-            console.log(`[DEBUG] ${message}`);
-        }
-
         async function fetchLeaderboard() {
             try {
-                debugLog('Fetching leaderboard data...');
                 const response = await fetch(`${API_BASE_URL}/leaderboard`);
                 
                 if (!response.ok) {
@@ -327,10 +313,8 @@
                 }
                 
                 const data = await response.json();
-                debugLog(`Received data: ${JSON.stringify(data, null, 2)}`);
                 updateLeaderboard(data);
             } catch (error) {
-                debugLog(`Error fetching data: ${error.message}`);
                 console.error('Error:', error);
                 document.getElementById('tableBody').innerHTML = 
                     '<div style="padding: 40px; text-align: center; color: #dc2626;">Unable to load data</div>';
@@ -339,8 +323,6 @@
 
         function updateLeaderboard(data) {
             const { leaderboard, totalVotes, lastUpdated } = data;
-            
-            debugLog(`Processing ${leaderboard.length} companies, ${totalVotes} total votes`);
             
             // Sort leaderboard by votes descending, then by name for ties
             const sortedLeaderboard = leaderboard.sort((a, b) => {
@@ -355,8 +337,6 @@
                 company.rank = index + 1;
             });
             
-            debugLog(`After sorting - Top 3 companies: ${sortedLeaderboard.slice(0, 3).map(c => `${c.name}: ${c.votes} votes (rank ${c.rank})`).join(', ')}`);
-            
             document.getElementById('totalVotes').textContent = totalVotes;
             document.getElementById('totalCompanies').textContent = leaderboard.length;
             
@@ -368,8 +348,6 @@
         }
 
         function updatePodium(topThree) {
-            debugLog(`Updating podium with: ${topThree.map(c => `${c.name}: ${c.votes}`).join(', ')}`);
-            
             const podium = document.getElementById('podium');
             
             // Create podium positions: 2nd, 1st, 3rd (visual order)
@@ -433,7 +411,6 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
-            debugLog('Page loaded, starting fetch...');
             fetchLeaderboard();
         });
         
