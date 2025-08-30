@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vote For The Best Pitch At Inbound</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .voting-container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 30px;
+            background: linear-gradient(135deg, #007AFF 0%, #005bb5 100%);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: white;
+        }
+
+        .voting-form {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 40px;
+            border-radius: 15px;
+            color: #333;
+            backdrop-filter: blur(10px);
+        }
+
+        .form-title {
+            text-align: center;
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #007AFF, #005bb5);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .form-subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .prize-text {
+            text-align: center;
+            color: #007AFF;
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 30px;
+            padding: 10px;
+            background: rgba(0, 122, 255, 0.1);
+            border-radius: 8px;
+            border: 1px solid rgba(0, 122, 255, 0.2);
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #444;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #007AFF;
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .form-group select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 12px center;
+            background-repeat: no-repeat;
+            background-size: 16px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #007AFF 0%, #005bb5 100%);
+            color: white;
+            padding: 18px;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 8px 15px rgba(0, 122, 255, 0.3);
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 25px rgba(0, 122, 255, 0.4);
+        }
+
+        .submit-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .submit-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .success-message {
+            background: #10b981;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: bold;
+            margin-top: 20px;
+            display: none;
+            animation: slideIn 0.5s ease;
+        }
+
+        .error-message {
+            background: #ef4444;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: bold;
+            margin-top: 20px;
+            display: none;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .required {
+            color: #ef4444;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #ffffff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="voting-container">
+        <form class="voting-form" id="votingForm">
+            <h1 class="form-title">Vote For The Best Pitch</h1>
+            <p class="form-subtitle">At Inbound 2025</p>
+            <p class="prize-text">🏆 Winner will receive $10,000 donated to their charity of choice</p>
+
+            <div class="form-group">
+                <label for="voterName">Your Name <span class="required">*</span></label>
+                <input type="text" id="voterName" name="voterName" required placeholder="Enter your full name">
+            </div>
+
+            <div class="form-group">
+                <label for="voterEmail">Email Address <span class="required">*</span></label>
+                <input type="email" id="voterEmail" name="voterEmail" required placeholder="your@email.com">
+            </div>
+
+            <div class="form-group">
+                <label for="voterPhone">Phone Number <span class="required">*</span></label>
+                <input type="tel" id="voterPhone" name="voterPhone" required placeholder="(555) 123-4567">
+            </div>
+
+            <div class="form-group">
+                <label for="companyVote">Vote for Company <span class="required">*</span></label>
+                <select id="companyVote" name="companyVote" required>
+                    <option value="">Select a company to vote for</option>
+                    <option value="apple">Apple</option>
+                    <option value="google">Google</option>
+                </select>
+            </div>
+
+            <button type="submit" class="submit-btn" id="submitBtn">
+                Cast Your Vote
+            </button>
+
+            <div class="success-message" id="successMessage">
+                🎉 Thank you! Your vote has been recorded successfully.
+            </div>
+
+            <div class="error-message" id="errorMessage">
+                ❌ Something went wrong. Please try again.
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // Configuration - Update this URL when you have your backend ready
+        const API_BASE_URL = 'REPLACE_WITH_YOUR_RAILWAY_URL/api';
+
+        // Load companies from backend
+        async function loadCompanies() {
+            try {
+                // For now, we'll use the static options
+                // When backend is ready, uncomment this:
+                /*
+                const response = await fetch(`${API_BASE_URL}/companies`);
+                const companies = await response.json();
+                
+                const select = document.getElementById('companyVote');
+                select.innerHTML = '<option value="">Select a company to vote for</option>';
+                
+                companies.forEach(company => {
+                    const option = document.createElement('option');
+                    option.value = company.id;
+                    option.textContent = company.name;
+                    select.appendChild(option);
+                });
+                */
+            } catch (error) {
+                console.error('Error loading companies:', error);
+            }
+        }
+
+        // Handle form submission
+        document.getElementById('votingForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const successMessage = document.getElementById('successMessage');
+            const errorMessage = document.getElementById('errorMessage');
+            
+            // Hide previous messages
+            successMessage.style.display = 'none';
+            errorMessage.style.display = 'none';
+            
+            // Show loading state
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="loading"></span>Submitting Vote...';
+            
+            // Get form data
+            const formData = {
+                voterName: document.getElementById('voterName').value,
+                voterEmail: document.getElementById('voterEmail').value,
+                voterPhone: document.getElementById('voterPhone').value,
+                companyVote: document.getElementById('companyVote').value
+            };
+            
+            try {
+                // For now, simulate API call
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                
+                // When backend is ready, uncomment this:
+                /*
+                const response = await fetch(`${API_BASE_URL}/vote`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to submit vote');
+                }
+                */
+                
+                // Show success message
+                successMessage.style.display = 'block';
+                
+                // Reset form
+                document.getElementById('votingForm').reset();
+                
+                // Log vote data (for testing)
+                console.log('Vote submitted:', formData);
+                
+            } catch (error) {
+                console.error('Error submitting vote:', error);
+                errorMessage.style.display = 'block';
+                errorMessage.textContent = '❌ Unable to submit your vote. Please try again.';
+            } finally {
+                // Reset button
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'Cast Your Vote';
+            }
+        });
+
+        // Load companies when page loads
+        document.addEventListener('DOMContentLoaded', loadCompanies);
+
+        // Phone number formatting
+        document.getElementById('voterPhone').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length >= 6) {
+                value = value.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
+            } else if (value.length >= 3) {
+                value = value.replace(/(\d{3})(\d{3})/, '($1) $2');
+            } else if (value.length > 0) {
+                value = value.replace(/(\d{3})/, '($1)');
+            }
+            e.target.value = value;
+        });
+    </script>
+</body>
+</html>
