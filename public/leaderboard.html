@@ -264,18 +264,6 @@
             font-size: 14px;
             margin-top: 30px;
         }
-
-        .debug-info {
-            background: #f8f9fa;
-            border: 1px solid #dee2e6;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 20px;
-            font-family: monospace;
-            font-size: 12px;
-            max-height: 200px;
-            overflow-y: auto;
-        }
     </style>
 </head>
 <body>
@@ -354,10 +342,20 @@
             
             debugLog(`Processing ${leaderboard.length} companies, ${totalVotes} total votes`);
             
-            // Sort leaderboard by votes descending to ensure correct order
-            const sortedLeaderboard = leaderboard.sort((a, b) => b.votes - a.votes);
+            // Sort leaderboard by votes descending, then by name for ties
+            const sortedLeaderboard = leaderboard.sort((a, b) => {
+                if (b.votes !== a.votes) {
+                    return b.votes - a.votes;
+                }
+                return a.name.localeCompare(b.name);
+            });
             
-            debugLog(`Top 3 companies: ${sortedLeaderboard.slice(0, 3).map(c => `${c.name}: ${c.votes} votes`).join(', ')}`);
+            // Add correct rank numbers after sorting
+            sortedLeaderboard.forEach((company, index) => {
+                company.rank = index + 1;
+            });
+            
+            debugLog(`After sorting - Top 3 companies: ${sortedLeaderboard.slice(0, 3).map(c => `${c.name}: ${c.votes} votes (rank ${c.rank})`).join(', ')}`);
             
             document.getElementById('totalVotes').textContent = totalVotes;
             document.getElementById('totalCompanies').textContent = leaderboard.length;
@@ -414,16 +412,15 @@
                 return;
             }
             
-            // Add rank numbers and calculate percentages
+            // Calculate percentages based on actual total votes
             const totalVotes = leaderboard.reduce((sum, company) => sum + company.votes, 0);
             
-            tbody.innerHTML = leaderboard.map((company, index) => {
-                const rank = index + 1;
+            tbody.innerHTML = leaderboard.map((company) => {
                 const percentage = totalVotes > 0 ? Math.round((company.votes / totalVotes) * 100) : 0;
                 
                 return `
                     <div class="table-row">
-                        <div class="rank">${rank}</div>
+                        <div class="rank">${company.rank}</div>
                         <div class="company">
                             ${company.name}
                             ${company.website ? `<a href="${company.website}" target="_blank">${company.website}</a>` : ''}
