@@ -88,19 +88,6 @@
             border-color: #007AFF;
         }
 
-        .file-input {
-            padding: 8px 12px !important;
-            background: #f8f9fa;
-            cursor: pointer;
-        }
-
-        .file-info {
-            font-size: 12px;
-            color: #666;
-            margin-top: 5px;
-            font-style: italic;
-        }
-
         .form-row {
             display: grid;
             grid-template-columns: 2fr 3fr 120px;
@@ -214,41 +201,6 @@
         .company-actions {
             display: flex;
             gap: 10px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-
-        .company-logo {
-            width: 60px;
-            height: 60px;
-            border-radius: 10px;
-            object-fit: contain;
-            background: #f8f9fa;
-            border: 1px solid #e9ecef;
-            padding: 8px;
-        }
-
-        .no-logo {
-            width: 60px;
-            height: 60px;
-            border-radius: 10px;
-            background: #f8f9fa;
-            border: 1px solid #e9ecef;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            color: #666;
-        }
-
-        .btn-small {
-            padding: 6px 12px !important;
-            font-size: 12px !important;
-        }
-
-        /* Hidden file input for logo changes */
-        .hidden-file-input {
-            display: none;
         }
 
         .status-badge {
@@ -374,7 +326,7 @@
             </div>
             <div class="section-content">
                 <div id="addMessage"></div>
-                <form id="addCompanyForm" enctype="multipart/form-data">
+                <form id="addCompanyForm">
                     <div class="form-row">
                         <div class="form-group">
                             <label for="companyName">Company Name *</label>
@@ -387,11 +339,6 @@
                         <div class="form-group">
                             <button type="submit" class="btn btn-primary">Add Company</button>
                         </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="companyLogo">Logo (optional)</label>
-                        <input type="file" id="companyLogo" name="logo" accept="image/*" class="file-input">
-                        <div class="file-info">Max size: 5MB. Formats: JPG, PNG, GIF, WebP</div>
                     </div>
                 </form>
             </div>
@@ -465,13 +412,6 @@
 
                 companiesList.innerHTML = companies.map(company => `
                     <div class="company-card ${company.active ? 'active' : 'inactive'} fade-in">
-                        ${company.logo_url ? `
-                            <img src="${API_BASE_URL.replace('/api', '')}${company.logo_url}" 
-                                 alt="${company.name}" 
-                                 class="company-logo"
-                                 onerror="this.style.display='none';">
-                        ` : '<div class="no-logo">📄</div>'}
-                        
                         <div class="company-info">
                             <div class="company-name">${company.name}</div>
                             ${company.website ? `<a href="${company.website}" class="company-website" target="_blank">${company.website}</a>` : ''}
@@ -485,7 +425,6 @@
                             <span class="status-badge ${company.active ? 'status-active' : 'status-inactive'}">
                                 ${company.active ? 'Active' : 'Inactive'}
                             </span>
-                            <button class="btn btn-primary btn-small" onclick="changeLogo(${company.id}, '${company.name}')">Change Logo</button>
                             ${company.active ? 
                                 `<button class="btn btn-danger" onclick="deactivateCompany(${company.id}, '${company.name}')">Deactivate</button>` :
                                 `<button class="btn btn-success" onclick="reactivateCompany(${company.id}, '${company.name}')">Reactivate</button>`
@@ -505,9 +444,12 @@
             e.preventDefault();
             
             const formData = new FormData(e.target);
-            
-            const companyName = formData.get('companyName').trim();
-            if (!companyName) {
+            const companyData = {
+                name: formData.get('companyName').trim(),
+                website: formData.get('companyWebsite').trim()
+            };
+
+            if (!companyData.name) {
                 showMessage('addMessage', 'Company name is required', 'error');
                 return;
             }
@@ -515,13 +457,16 @@
             try {
                 const response = await fetch(`${API_BASE_URL}/admin/companies`, {
                     method: 'POST',
-                    body: formData // Send FormData directly for multipart/form-data
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(companyData)
                 });
 
                 const result = await response.json();
 
                 if (response.ok) {
-                    showMessage('addMessage', `Company "${companyName}" added successfully!`, 'success');
+                    showMessage('addMessage', `Company "${companyData.name}" added successfully!`, 'success');
                     e.target.reset();
                     await refreshData();
                 } else {
@@ -594,49 +539,6 @@
             setTimeout(() => {
                 container.innerHTML = '';
             }, 5000);
-        }
-
-        // Change company logo
-        async function changeLogo(companyId, companyName) {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = 'image/*';
-            input.className = 'hidden-file-input';
-            
-            input.addEventListener('change', async function(e) {
-                const file = e.target.files[0];
-                if (!file) return;
-                
-                // Validate file size (5MB limit)
-                if (file.size > 5 * 1024 * 1024) {
-                    showMessage('manageMessage', 'File size must be less than 5MB', 'error');
-                    return;
-                }
-                
-                const formData = new FormData();
-                formData.append('logo', file);
-                
-                try {
-                    const response = await fetch(`${API_BASE_URL}/admin/companies/${companyId}/logo`, {
-                        method: 'PATCH',
-                        body: formData
-                    });
-                    
-                    const result = await response.json();
-                    
-                    if (response.ok) {
-                        showMessage('manageMessage', `Logo updated for "${companyName}"`, 'success');
-                        await refreshData();
-                    } else {
-                        showMessage('manageMessage', result.error || 'Failed to update logo', 'error');
-                    }
-                } catch (error) {
-                    console.error('Error updating logo:', error);
-                    showMessage('manageMessage', 'Network error. Please try again.', 'error');
-                }
-            });
-            
-            input.click();
         }
 
         // Auto-refresh every 30 seconds
