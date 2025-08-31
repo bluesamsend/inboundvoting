@@ -121,6 +121,46 @@
             background-size: 16px;
         }
 
+        .optin-section {
+            margin-bottom: 25px;
+            padding: 20px;
+            background: rgba(0, 122, 255, 0.05);
+            border: 1px solid rgba(0, 122, 255, 0.15);
+            border-radius: 10px;
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            cursor: pointer;
+        }
+
+        .checkbox-container input[type="checkbox"] {
+            width: auto;
+            margin: 0;
+            margin-top: 4px;
+            transform: scale(1.2);
+            cursor: pointer;
+        }
+
+        .optin-text {
+            font-size: 14px;
+            line-height: 1.5;
+            color: #555;
+            flex: 1;
+        }
+
+        .optin-text a {
+            color: #007AFF;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .optin-text a:hover {
+            text-decoration: underline;
+        }
+
         .submit-btn {
             width: 100%;
             background: linear-gradient(135deg, #007AFF 0%, #005bb5 100%);
@@ -220,7 +260,7 @@
         <form class="voting-form" id="votingForm">
             <h1 class="form-title">Vote For The Best Pitch</h1>
             <p class="form-subtitle">At Inbound 2025</p>
-            <p class="prize-text">🏆 Winner will receive $10,000 donated to their charity of choice</p>
+            <p class="prize-text">Winner will receive $10,000 donated to their charity of choice</p>
 
             <div class="form-group">
                 <label for="voterName">Your Name <span class="required">*</span></label>
@@ -236,36 +276,36 @@
                 <label for="voterPhone">Phone Number <span class="required">*</span></label>
                 <div class="phone-input-container">
                     <select id="countryCode" name="countryCode" class="country-select">
-                        <option value="+1" data-flag="🇺🇸">🇺🇸 +1</option>
-                        <option value="+1" data-flag="🇨🇦">🇨🇦 +1</option>
-                        <option value="+44" data-flag="🇬🇧">🇬🇧 +44</option>
-                        <option value="+33" data-flag="🇫🇷">🇫🇷 +33</option>
-                        <option value="+49" data-flag="🇩🇪">🇩🇪 +49</option>
-                        <option value="+39" data-flag="🇮🇹">🇮🇹 +39</option>
-                        <option value="+34" data-flag="🇪🇸">🇪🇸 +34</option>
-                        <option value="+31" data-flag="🇳🇱">🇳🇱 +31</option>
-                        <option value="+46" data-flag="🇸🇪">🇸🇪 +46</option>
-                        <option value="+47" data-flag="🇳🇴">🇳🇴 +47</option>
-                        <option value="+45" data-flag="🇩🇰">🇩🇰 +45</option>
-                        <option value="+358" data-flag="🇫🇮">🇫🇮 +358</option>
-                        <option value="+41" data-flag="🇨🇭">🇨🇭 +41</option>
-                        <option value="+43" data-flag="🇦🇹">🇦🇹 +43</option>
-                        <option value="+32" data-flag="🇧🇪">🇧🇪 +32</option>
-                        <option value="+351" data-flag="🇵🇹">🇵🇹 +351</option>
-                        <option value="+353" data-flag="🇮🇪">🇮🇪 +353</option>
-                        <option value="+61" data-flag="🇦🇺">🇦🇺 +61</option>
-                        <option value="+64" data-flag="🇳🇿">🇳🇿 +64</option>
-                        <option value="+81" data-flag="🇯🇵">🇯🇵 +81</option>
-                        <option value="+82" data-flag="🇰🇷">🇰🇷 +82</option>
-                        <option value="+86" data-flag="🇨🇳">🇨🇳 +86</option>
-                        <option value="+91" data-flag="🇮🇳">🇮🇳 +91</option>
-                        <option value="+65" data-flag="🇸🇬">🇸🇬 +65</option>
-                        <option value="+852" data-flag="🇭🇰">🇭🇰 +852</option>
-                        <option value="+55" data-flag="🇧🇷">🇧🇷 +55</option>
-                        <option value="+52" data-flag="🇲🇽">🇲🇽 +52</option>
-                        <option value="+54" data-flag="🇦🇷">🇦🇷 +54</option>
-                        <option value="+56" data-flag="🇨🇱">🇨🇱 +56</option>
-                        <option value="+57" data-flag="🇨🇴">🇨🇴 +57</option>
+                        <option value="+1" data-flag="US">US +1</option>
+                        <option value="+1" data-flag="CA">CA +1</option>
+                        <option value="+44" data-flag="GB">GB +44</option>
+                        <option value="+33" data-flag="FR">FR +33</option>
+                        <option value="+49" data-flag="DE">DE +49</option>
+                        <option value="+39" data-flag="IT">IT +39</option>
+                        <option value="+34" data-flag="ES">ES +34</option>
+                        <option value="+31" data-flag="NL">NL +31</option>
+                        <option value="+46" data-flag="SE">SE +46</option>
+                        <option value="+47" data-flag="NO">NO +47</option>
+                        <option value="+45" data-flag="DK">DK +45</option>
+                        <option value="+358" data-flag="FI">FI +358</option>
+                        <option value="+41" data-flag="CH">CH +41</option>
+                        <option value="+43" data-flag="AT">AT +43</option>
+                        <option value="+32" data-flag="BE">BE +32</option>
+                        <option value="+351" data-flag="PT">PT +351</option>
+                        <option value="+353" data-flag="IE">IE +353</option>
+                        <option value="+61" data-flag="AU">AU +61</option>
+                        <option value="+64" data-flag="NZ">NZ +64</option>
+                        <option value="+81" data-flag="JP">JP +81</option>
+                        <option value="+82" data-flag="KR">KR +82</option>
+                        <option value="+86" data-flag="CN">CN +86</option>
+                        <option value="+91" data-flag="IN">IN +91</option>
+                        <option value="+65" data-flag="SG">SG +65</option>
+                        <option value="+852" data-flag="HK">HK +852</option>
+                        <option value="+55" data-flag="BR">BR +55</option>
+                        <option value="+52" data-flag="MX">MX +52</option>
+                        <option value="+54" data-flag="AR">AR +54</option>
+                        <option value="+56" data-flag="CL">CL +56</option>
+                        <option value="+57" data-flag="CO">CO +57</option>
                     </select>
                     <input type="tel" id="voterPhone" name="voterPhone" required placeholder="123 456 7890">
                 </div>
@@ -278,16 +318,25 @@
                 </select>
             </div>
 
+            <div class="optin-section">
+                <div class="checkbox-container">
+                    <input type="checkbox" id="optinCheckbox" name="optinCheckbox" required>
+                    <label for="optinCheckbox" class="optin-text">
+                        By entering information, I agree to Sendblue <a href="https://www.sendblue.com/terms-of-service" target="_blank">Terms</a>, <a href="https://www.sendblue.com/privacy-policy" target="_blank">Privacy Policy</a>, and I authorize Sendblue to deliver promotional texts or calls using an automatic telephone dialing system or prerecorded or artificial voice message to the number I provided. I understand my consent is not required as a condition of any purchase. Standard messaging and data rates apply. <span class="required">*</span>
+                    </label>
+                </div>
+            </div>
+
             <button type="submit" class="submit-btn" id="submitBtn">
                 Cast Your Vote
             </button>
 
             <div class="success-message" id="successMessage">
-                🎉 Thank you! Your vote has been recorded successfully. Redirecting to leaderboard...
+                Thank you! Your vote has been recorded successfully. Redirecting to leaderboard...
             </div>
 
             <div class="error-message" id="errorMessage">
-                ❌ Something went wrong. Please try again.
+                Something went wrong. Please try again.
             </div>
         </form>
     </div>
@@ -338,6 +387,13 @@
             const submitBtn = document.getElementById('submitBtn');
             const successMessage = document.getElementById('successMessage');
             const errorMessage = document.getElementById('errorMessage');
+            const optinCheckbox = document.getElementById('optinCheckbox');
+            
+            // Check if opt-in is checked
+            if (!optinCheckbox.checked) {
+                showError('You must agree to the terms and privacy policy to vote.');
+                return;
+            }
             
             // Hide previous messages
             successMessage.style.display = 'none';
@@ -398,7 +454,7 @@
         // Show error message
         function showError(message) {
             const errorMessage = document.getElementById('errorMessage');
-            errorMessage.textContent = `❌ ${message}`;
+            errorMessage.textContent = message;
             errorMessage.style.display = 'block';
         }
 
