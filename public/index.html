@@ -121,6 +121,144 @@
             background-size: 16px;
         }
 
+        /* Searchable Dropdown Styles */
+        .searchable-dropdown {
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 15px 45px 15px 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: white;
+            cursor: text;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #007AFF;
+            box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .search-input.has-selection {
+            color: #333;
+            font-weight: 500;
+        }
+
+        .search-input.placeholder {
+            color: #999;
+        }
+
+        .dropdown-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+            transition: transform 0.3s ease;
+        }
+
+        .dropdown-icon.open {
+            transform: translateY(-50%) rotate(180deg);
+        }
+
+        .dropdown-list {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 2px solid #007AFF;
+            border-top: none;
+            border-radius: 0 0 10px 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 4px 12px rgba(0, 122, 255, 0.15);
+        }
+
+        .dropdown-list.show {
+            display: block;
+        }
+
+        .dropdown-item {
+            padding: 12px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #f1f5f9;
+            transition: background-color 0.2s ease;
+            font-size: 16px;
+        }
+
+        .dropdown-item:hover,
+        .dropdown-item.highlighted {
+            background-color: #f0f7ff;
+        }
+
+        .dropdown-item:last-child {
+            border-bottom: none;
+        }
+
+        .dropdown-item.selected {
+            background-color: #007AFF;
+            color: white;
+        }
+
+        .no-results {
+            padding: 15px;
+            text-align: center;
+            color: #666;
+            font-style: italic;
+        }
+
+        .loading-dropdown {
+            padding: 15px;
+            text-align: center;
+            color: #666;
+            font-style: italic;
+        }
+
+        .search-loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #ccc;
+            border-radius: 50%;
+            border-top-color: #007AFF;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 8px;
+        }
+
+        .clear-button {
+            position: absolute;
+            right: 45px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            font-size: 18px;
+            color: #999;
+            cursor: pointer;
+            padding: 0;
+            width: 20px;
+            height: 20px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .clear-button:hover {
+            color: #666;
+        }
+
+        .clear-button.show {
+            display: flex;
+        }
+
         .optin-section {
             margin-bottom: 25px;
             padding: 20px;
@@ -313,9 +451,26 @@
 
             <div class="form-group">
                 <label for="companyVote">Vote for Company <span class="required">*</span></label>
-                <select id="companyVote" name="companyVote" required>
-                    <option value="">Loading companies...</option>
-                </select>
+                <div class="searchable-dropdown">
+                    <input 
+                        type="text" 
+                        id="companySearch" 
+                        class="search-input placeholder" 
+                        placeholder="Type to search for a company..." 
+                        autocomplete="off"
+                        required
+                    >
+                    <button type="button" class="clear-button" id="clearButton">×</button>
+                    <svg class="dropdown-icon" id="dropdownIcon" width="16" height="16" viewBox="0 0 20 20">
+                        <path stroke="#6b7280" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 8l4 4 4-4"/>
+                    </svg>
+                    <div class="dropdown-list" id="dropdownList">
+                        <div class="loading-dropdown">
+                            <span class="search-loading"></span>Loading companies...
+                        </div>
+                    </div>
+                    <input type="hidden" id="companyVote" name="companyVote" required>
+                </div>
             </div>
 
             <div class="optin-section">
@@ -345,40 +500,209 @@
         // Configuration
         const API_BASE_URL = 'https://inboundvoting-production.up.railway.app/api';
 
+        // Global variables
+        let allCompanies = [];
+        let filteredCompanies = [];
+        let selectedCompany = null;
+        let highlightedIndex = -1;
+        let isDropdownOpen = false;
+
+        // DOM elements
+        const searchInput = document.getElementById('companySearch');
+        const dropdownList = document.getElementById('dropdownList');
+        const dropdownIcon = document.getElementById('dropdownIcon');
+        const clearButton = document.getElementById('clearButton');
+        const hiddenInput = document.getElementById('companyVote');
+
         // Load companies from backend
         async function loadCompanies() {
-            const select = document.getElementById('companyVote');
-            
             try {
                 const response = await fetch(`${API_BASE_URL}/companies`);
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 
-                const companies = await response.json();
+                allCompanies = await response.json();
+                filteredCompanies = [...allCompanies];
                 
-                // Clear loading option
-                select.innerHTML = '<option value="">Select a company to vote for</option>';
-                
-                // Add companies to dropdown
-                companies.forEach(company => {
-                    const option = document.createElement('option');
-                    option.value = company.id;
-                    option.textContent = company.name;
-                    select.appendChild(option);
-                });
-
-                // If no companies, show message
-                if (companies.length === 0) {
-                    select.innerHTML = '<option value="">No companies available yet</option>';
+                if (allCompanies.length === 0) {
+                    dropdownList.innerHTML = '<div class="no-results">No companies available yet</div>';
+                } else {
+                    updateDropdownList();
                 }
                 
             } catch (error) {
                 console.error('Error loading companies:', error);
-                select.innerHTML = '<option value="">Error loading companies</option>';
+                dropdownList.innerHTML = '<div class="no-results">Error loading companies</div>';
                 showError('Failed to load companies. Please refresh the page.');
             }
         }
+
+        // Filter companies based on search term
+        function filterCompanies(searchTerm) {
+            const term = searchTerm.toLowerCase().trim();
+            if (!term) {
+                filteredCompanies = [...allCompanies];
+            } else {
+                filteredCompanies = allCompanies.filter(company => 
+                    company.name.toLowerCase().includes(term)
+                );
+            }
+            highlightedIndex = -1;
+            updateDropdownList();
+        }
+
+        // Update dropdown list display
+        function updateDropdownList() {
+            if (filteredCompanies.length === 0) {
+                dropdownList.innerHTML = '<div class="no-results">No companies found</div>';
+                return;
+            }
+
+            const maxResults = 100; // Limit displayed results for performance
+            const displayCompanies = filteredCompanies.slice(0, maxResults);
+            
+            dropdownList.innerHTML = displayCompanies.map((company, index) => `
+                <div class="dropdown-item" data-id="${company.id}" data-name="${company.name}" data-index="${index}">
+                    ${company.name}
+                </div>
+            `).join('');
+
+            if (filteredCompanies.length > maxResults) {
+                dropdownList.innerHTML += `<div class="no-results">Showing first ${maxResults} of ${filteredCompanies.length} results. Keep typing to refine...</div>`;
+            }
+        }
+
+        // Show dropdown
+        function showDropdown() {
+            isDropdownOpen = true;
+            dropdownList.classList.add('show');
+            dropdownIcon.classList.add('open');
+            searchInput.style.borderRadius = '10px 10px 0 0';
+        }
+
+        // Hide dropdown
+        function hideDropdown() {
+            isDropdownOpen = false;
+            dropdownList.classList.remove('show');
+            dropdownIcon.classList.remove('open');
+            searchInput.style.borderRadius = '10px';
+            highlightedIndex = -1;
+        }
+
+        // Select company
+        function selectCompany(id, name) {
+            selectedCompany = { id, name };
+            hiddenInput.value = id;
+            searchInput.value = name;
+            searchInput.classList.add('has-selection');
+            searchInput.classList.remove('placeholder');
+            clearButton.classList.add('show');
+            hideDropdown();
+        }
+
+        // Clear selection
+        function clearSelection() {
+            selectedCompany = null;
+            hiddenInput.value = '';
+            searchInput.value = '';
+            searchInput.classList.remove('has-selection');
+            searchInput.classList.add('placeholder');
+            clearButton.classList.remove('show');
+            filteredCompanies = [...allCompanies];
+            updateDropdownList();
+            searchInput.focus();
+        }
+
+        // Highlight item by index
+        function highlightItem(index) {
+            const items = dropdownList.querySelectorAll('.dropdown-item');
+            items.forEach((item, i) => {
+                item.classList.toggle('highlighted', i === index);
+            });
+            highlightedIndex = index;
+        }
+
+        // Event Listeners
+        searchInput.addEventListener('input', (e) => {
+            const value = e.target.value;
+            
+            if (selectedCompany && value !== selectedCompany.name) {
+                clearSelection();
+            }
+            
+            if (!isDropdownOpen) {
+                showDropdown();
+            }
+            
+            filterCompanies(value);
+        });
+
+        searchInput.addEventListener('focus', () => {
+            if (!selectedCompany) {
+                showDropdown();
+                if (filteredCompanies.length === 0 && allCompanies.length > 0) {
+                    filteredCompanies = [...allCompanies];
+                    updateDropdownList();
+                }
+            }
+        });
+
+        searchInput.addEventListener('keydown', (e) => {
+            const items = dropdownList.querySelectorAll('.dropdown-item');
+            
+            switch (e.key) {
+                case 'ArrowDown':
+                    e.preventDefault();
+                    if (!isDropdownOpen) {
+                        showDropdown();
+                        return;
+                    }
+                    highlightedIndex = Math.min(highlightedIndex + 1, items.length - 1);
+                    highlightItem(highlightedIndex);
+                    break;
+                    
+                case 'ArrowUp':
+                    e.preventDefault();
+                    highlightedIndex = Math.max(highlightedIndex - 1, -1);
+                    highlightItem(highlightedIndex);
+                    break;
+                    
+                case 'Enter':
+                    e.preventDefault();
+                    if (highlightedIndex >= 0 && items[highlightedIndex]) {
+                        const item = items[highlightedIndex];
+                        selectCompany(item.dataset.id, item.dataset.name);
+                    }
+                    break;
+                    
+                case 'Escape':
+                    hideDropdown();
+                    searchInput.blur();
+                    break;
+            }
+        });
+
+        // Dropdown item clicks
+        dropdownList.addEventListener('click', (e) => {
+            const item = e.target.closest('.dropdown-item');
+            if (item) {
+                selectCompany(item.dataset.id, item.dataset.name);
+            }
+        });
+
+        // Clear button
+        clearButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            clearSelection();
+        });
+
+        // Click outside to close dropdown
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.searchable-dropdown')) {
+                hideDropdown();
+            }
+        });
 
         // Handle form submission
         document.getElementById('votingForm').addEventListener('submit', async function(e) {
@@ -392,6 +716,13 @@
             // Check if opt-in is checked
             if (!optinCheckbox.checked) {
                 showError('You must agree to the terms and privacy policy to vote.');
+                return;
+            }
+
+            // Check if company is selected
+            if (!selectedCompany) {
+                showError('Please select a company to vote for.');
+                searchInput.focus();
                 return;
             }
             
@@ -412,7 +743,7 @@
                 voterName: document.getElementById('voterName').value,
                 voterEmail: document.getElementById('voterEmail').value,
                 voterPhone: fullPhoneNumber,
-                companyVote: document.getElementById('companyVote').value
+                companyVote: selectedCompany.id
             };
             
             try {
@@ -432,6 +763,7 @@
                     
                     // Reset form
                     document.getElementById('votingForm').reset();
+                    clearSelection();
                     
                     // Redirect to leaderboard after 2 seconds
                     setTimeout(() => {
