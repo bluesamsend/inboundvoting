@@ -15,7 +15,7 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             background: #ffffff;
             color: #1a1a1a;
-            padding: 40px 20px;
+            padding: 20px 10px;
         }
 
         .container {
@@ -25,41 +25,46 @@
 
         .header {
             text-align: center;
-            margin-bottom: 60px;
+            margin-bottom: 40px;
         }
 
         .title {
-            font-size: 32px;
+            font-size: clamp(24px, 5vw, 32px);
             font-weight: 600;
             color: #1a1a1a;
             margin-bottom: 12px;
+            line-height: 1.2;
         }
 
         .subtitle {
-            font-size: 16px;
+            font-size: clamp(14px, 3vw, 16px);
             color: #64748b;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
+            line-height: 1.4;
+            padding: 0 10px;
         }
 
         .stats {
             display: flex;
             justify-content: center;
-            gap: 40px;
-            margin-bottom: 50px;
+            gap: clamp(20px, 8vw, 40px);
+            margin-bottom: 40px;
+            flex-wrap: wrap;
         }
 
         .stat {
             text-align: center;
+            min-width: 80px;
         }
 
         .stat-number {
-            font-size: 28px;
+            font-size: clamp(24px, 6vw, 28px);
             font-weight: 700;
             color: #1976d2;
         }
 
         .stat-label {
-            font-size: 14px;
+            font-size: clamp(12px, 3vw, 14px);
             color: #64748b;
             margin-top: 4px;
         }
@@ -68,20 +73,53 @@
             display: flex;
             justify-content: center;
             align-items: flex-end;
-            gap: 30px;
-            margin-bottom: 60px;
-            min-height: 300px;
+            gap: clamp(10px, 4vw, 30px);
+            margin-bottom: 40px;
+            min-height: clamp(200px, 40vw, 300px);
+            flex-wrap: wrap;
+        }
+
+        /* Mobile: Stack podium vertically */
+        @media (max-width: 768px) {
+            .podium {
+                flex-direction: column;
+                align-items: center;
+                gap: 20px;
+                min-height: auto;
+            }
+            
+            .place {
+                order: initial !important;
+                width: 100%;
+                max-width: 300px;
+                height: auto !important;
+                min-height: 200px;
+            }
+            
+            .place.first {
+                order: 1;
+            }
+            
+            .place.second {
+                order: 2;
+            }
+            
+            .place.third {
+                order: 3;
+            }
         }
 
         .place {
             background: #ffffff;
             border: 2px solid #e2e8f0;
             border-radius: 16px;
-            padding: 32px 24px;
+            padding: clamp(16px, 4vw, 32px) clamp(12px, 3vw, 24px);
             text-align: center;
-            min-width: 220px;
+            min-width: clamp(180px, 30vw, 220px);
             position: relative;
             transition: transform 0.3s ease;
+            flex: 1;
+            max-width: 250px;
         }
 
         .place:hover {
@@ -89,21 +127,21 @@
         }
 
         .place.first { 
-            height: 320px;
+            height: clamp(250px, 45vw, 320px);
             border-color: #1976d2;
             background: linear-gradient(135deg, #ffffff 0%, #f0f7ff 100%);
             order: 2;
         }
 
         .place.second { 
-            height: 280px;
+            height: clamp(220px, 40vw, 280px);
             border-color: #64748b;
             background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
             order: 1;
         }
 
         .place.third { 
-            height: 240px;
+            height: clamp(200px, 35vw, 240px);
             border-color: #f59e0b;
             background: linear-gradient(135deg, #ffffff 0%, #fffbeb 100%);
             order: 3;
@@ -111,14 +149,14 @@
 
         .place-number {
             position: absolute;
-            top: -16px;
-            right: -16px;
-            width: 48px;
-            height: 48px;
+            top: -12px;
+            right: -12px;
+            width: clamp(36px, 8vw, 48px);
+            height: clamp(36px, 8vw, 48px);
             border-radius: 50%;
             color: white;
             font-weight: 700;
-            font-size: 20px;
+            font-size: clamp(16px, 4vw, 20px);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -138,53 +176,43 @@
         }
 
         .place-label {
-            font-size: 14px;
+            font-size: clamp(11px, 2.5vw, 14px);
             font-weight: 600;
             color: #64748b;
-            margin-bottom: 20px;
+            margin-bottom: clamp(12px, 3vw, 20px);
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
 
         .company-logo {
-            width: 64px;
-            height: 64px;
+            width: clamp(48px, 12vw, 64px);
+            height: clamp(48px, 12vw, 64px);
             border-radius: 8px;
             object-fit: contain;
             background: #f8fafc;
             border: 1px solid #e2e8f0;
-            padding: 8px;
-            margin: 0 auto 16px;
+            padding: 6px;
+            margin: 0 auto clamp(12px, 3vw, 16px);
             display: block;
-        }
-
-        .company-logo-table {
-            width: 32px;
-            height: 32px;
-            border-radius: 6px;
-            object-fit: contain;
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            padding: 4px;
-            margin-right: 12px;
-            flex-shrink: 0;
         }
 
         .company-name {
-            font-size: 20px;
+            font-size: clamp(16px, 4vw, 20px);
             font-weight: 700;
             color: #1a1a1a;
-            margin-bottom: 8px;
+            margin-bottom: clamp(6px, 2vw, 8px);
             line-height: 1.2;
+            word-break: break-word;
         }
 
         .company-website {
-            font-size: 13px;
+            font-size: clamp(11px, 2.5vw, 13px);
             color: #1976d2;
             text-decoration: none;
-            margin-bottom: 20px;
+            margin-bottom: clamp(12px, 3vw, 20px);
             display: block;
             font-weight: 500;
+            word-break: break-all;
         }
 
         .company-website:hover {
@@ -192,7 +220,7 @@
         }
 
         .vote-count {
-            font-size: 36px;
+            font-size: clamp(28px, 7vw, 36px);
             font-weight: 800;
             color: #1976d2;
             letter-spacing: -0.02em;
@@ -203,21 +231,23 @@
             border: 1px solid #e2e8f0;
             border-radius: 12px;
             overflow: hidden;
+            margin: 0 -5px;
         }
 
         .table-header {
             background: #1976d2;
             color: white;
-            padding: 20px 24px;
-            font-size: 18px;
+            padding: clamp(15px, 4vw, 20px) clamp(15px, 4vw, 24px);
+            font-size: clamp(16px, 4vw, 18px);
             font-weight: 600;
             text-align: center;
         }
 
         .table-row {
             display: grid;
-            grid-template-columns: 60px 1fr 100px 80px;
-            padding: 16px 24px;
+            grid-template-columns: auto 1fr auto auto;
+            gap: clamp(8px, 2vw, 16px);
+            padding: clamp(12px, 3vw, 16px) clamp(15px, 4vw, 24px);
             border-bottom: 1px solid #f1f5f9;
             align-items: center;
         }
@@ -230,39 +260,118 @@
             background: #f8fafc;
         }
 
+        /* Mobile table layout */
+        @media (max-width: 640px) {
+            .table-row {
+                grid-template-columns: 1fr;
+                gap: 8px;
+                padding: 16px;
+                text-align: left;
+            }
+            
+            .rank {
+                font-size: 18px;
+                margin-bottom: 4px;
+            }
+            
+            .company {
+                margin-bottom: 8px;
+            }
+            
+            .mobile-stats {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-top: 8px;
+                padding-top: 8px;
+                border-top: 1px solid #f1f5f9;
+            }
+            
+            .votes, .percentage {
+                margin: 0;
+            }
+        }
+
         .rank {
             font-weight: 700;
             color: #1976d2;
+            font-size: clamp(14px, 3.5vw, 16px);
+            min-width: 40px;
         }
 
         .company {
             font-weight: 600;
+            font-size: clamp(14px, 3.5vw, 16px);
+            min-width: 0;
         }
 
         .company a {
             color: #64748b;
-            font-size: 13px;
+            font-size: clamp(11px, 2.5vw, 13px);
             text-decoration: none;
             display: block;
             margin-top: 2px;
+            word-break: break-all;
         }
 
         .votes {
             font-weight: 700;
             color: #1976d2;
             text-align: center;
+            font-size: clamp(14px, 3.5vw, 16px);
+            min-width: 60px;
         }
 
         .percentage {
             color: #64748b;
             text-align: center;
+            font-size: clamp(14px, 3.5vw, 16px);
+            min-width: 50px;
         }
 
         .last-updated {
             text-align: center;
             color: #64748b;
-            font-size: 14px;
-            margin-top: 30px;
+            font-size: clamp(12px, 3vw, 14px);
+            margin-top: 20px;
+            padding: 0 10px;
+            line-height: 1.4;
+        }
+
+        /* Hide mobile stats on desktop */
+        .mobile-stats {
+            display: none;
+        }
+
+        /* Landscape mobile adjustments */
+        @media (max-width: 768px) and (orientation: landscape) {
+            .podium {
+                flex-direction: row;
+                flex-wrap: nowrap;
+                gap: 15px;
+            }
+            
+            .place {
+                width: auto;
+                max-width: none;
+                flex: 1;
+                min-width: 150px;
+            }
+        }
+
+        /* Very small screens */
+        @media (max-width: 320px) {
+            body {
+                padding: 15px 5px;
+            }
+            
+            .container {
+                padding: 0 5px;
+            }
+            
+            .table {
+                margin: 0 -10px;
+            }
         }
     </style>
 </head>
@@ -393,22 +502,56 @@
             // Calculate percentages based on actual total votes
             const totalVotes = leaderboard.reduce((sum, company) => sum + company.votes, 0);
             
+            // Check if we're on mobile
+            const isMobile = window.innerWidth <= 640;
+            
             tbody.innerHTML = leaderboard.map((company) => {
                 const percentage = totalVotes > 0 ? Math.round((company.votes / totalVotes) * 100) : 0;
                 
-                return `
-                    <div class="table-row">
-                        <div class="rank">${company.rank}</div>
-                        <div class="company">
-                            ${company.name}
-                            ${company.website ? `<a href="${company.website}" target="_blank">${company.website}</a>` : ''}
+                if (isMobile) {
+                    return `
+                        <div class="table-row">
+                            <div class="rank">#${company.rank}</div>
+                            <div class="company">
+                                ${company.name}
+                                ${company.website ? `<a href="${company.website}" target="_blank">${company.website}</a>` : ''}
+                            </div>
+                            <div class="mobile-stats">
+                                <div class="votes">${company.votes} votes</div>
+                                <div class="percentage">${percentage}%</div>
+                            </div>
                         </div>
-                        <div class="votes">${company.votes}</div>
-                        <div class="percentage">${percentage}%</div>
-                    </div>
-                `;
+                    `;
+                } else {
+                    return `
+                        <div class="table-row">
+                            <div class="rank">${company.rank}</div>
+                            <div class="company">
+                                ${company.name}
+                                ${company.website ? `<a href="${company.website}" target="_blank">${company.website}</a>` : ''}
+                            </div>
+                            <div class="votes">${company.votes}</div>
+                            <div class="percentage">${percentage}%</div>
+                        </div>
+                    `;
+                }
             }).join('');
         }
+
+        // Update table layout on resize
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                // Re-render table if data exists
+                const tbody = document.getElementById('tableBody');
+                if (tbody && tbody.children.length > 0 && !tbody.textContent.includes('Loading')) {
+                    // Force re-render by triggering update
+                    const event = new Event('resize-update');
+                    document.dispatchEvent(event);
+                }
+            }, 100);
+        });
 
         document.addEventListener('DOMContentLoaded', function() {
             fetchLeaderboard();
