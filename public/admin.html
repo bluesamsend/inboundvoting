@@ -259,6 +259,19 @@
             box-shadow: 0 3px 10px rgba(40, 167, 69, 0.3);
         }
 
+        .btn-votes {
+            background: linear-gradient(135deg, #17a2b8, #138496);
+            color: white;
+            padding: 8px 16px;
+            font-size: 14px;
+            margin-right: 10px;
+        }
+
+        .btn-votes:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 3px 10px rgba(23, 162, 184, 0.3);
+        }
+
         .companies-grid {
             display: grid;
             gap: 20px;
@@ -316,6 +329,8 @@
         .company-actions {
             display: flex;
             gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
         }
 
         .status-badge {
@@ -614,6 +629,43 @@
             return true;
         }
 
+        // Add 5 votes to a company
+        async function addFiveVotes(companyId, companyName) {
+            if (!checkAuthForApiCall()) return;
+            
+            if (!confirm(`Add 5 votes to "${companyName}"? This will add 5 vote records to the database and log them in the Google spreadsheet.`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/admin/companies/${companyId}/add-votes`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        votes: 5,
+                        voterName: 'SENDBLUE',
+                        voterEmail: 'support@sendblue.com',
+                        reason: 'Admin manual vote addition'
+                    })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    showMessage('manageMessage', `Successfully added 5 votes to "${companyName}"!`, 'success');
+                    await refreshData();
+                } else {
+                    showMessage('manageMessage', result.error || 'Failed to add votes', 'error');
+                }
+
+            } catch (error) {
+                console.error('Error adding votes:', error);
+                showMessage('manageMessage', 'Network error. Please try again.', 'error');
+            }
+        }
+
         // Refresh all data (only if authenticated)
         async function refreshData() {
             if (!checkAuthForApiCall()) return;
@@ -678,10 +730,12 @@
                             <span class="status-badge ${company.active ? 'status-active' : 'status-inactive'}">
                                 ${company.active ? 'Active' : 'Inactive'}
                             </span>
-                            ${company.active ? 
-                                `<button class="btn btn-danger" onclick="deactivateCompany(${company.id}, '${company.name}')">Deactivate</button>` :
-                                `<button class="btn btn-success" onclick="reactivateCompany(${company.id}, '${company.name}')">Reactivate</button>`
-                            }
+                            ${company.active ? `
+                                <button class="btn btn-votes" onclick="addFiveVotes(${company.id}, '${company.name.replace(/'/g, "\\'")}')">+5 Votes</button>
+                                <button class="btn btn-danger" onclick="deactivateCompany(${company.id}, '${company.name.replace(/'/g, "\\'")}')">Deactivate</button>
+                            ` : `
+                                <button class="btn btn-success" onclick="reactivateCompany(${company.id}, '${company.name.replace(/'/g, "\\'")}')">Reactivate</button>
+                            `}
                         </div>
                     </div>
                 `).join('');
