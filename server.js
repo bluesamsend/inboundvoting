@@ -93,7 +93,8 @@ app.get('/', (req, res) => {
       leaderboard: 'GET /api/leaderboard',
       admin: {
         companies: 'POST /api/admin/companies (add), DELETE /api/admin/companies/:id',
-        votes: 'GET /api/admin/votes'
+        votes: 'GET /api/admin/votes',
+        addVotes: 'POST /api/admin/companies/:id/add-votes'
       }
     }
   });
@@ -258,6 +259,72 @@ app.get('/api/leaderboard', async (req, res) => {
 });
 
 // Admin Routes
+
+// Add manual votes to a company - Admin endpoint
+app.post('/api/admin/companies/:id/add-votes', async (req, res) => {
+  const { id } = req.params;
+  const { votes = 5, voterName = 'SENDBLUE', voterEmail = 'support@sendblue.com', reason = 'Manual vote addition' } = req.body;
+
+  try {
+    // Get company details first
+    const company = await pool.query(
+      'SELECT id, name, website FROM companies WHERE id = $1',
+      [id]
+    );
+
+    if (company.rows.length === 0) {
+      return res.status(404).json({ error: 'Company not found' });
+    }
+
+    const selectedCompany = company.rows[0];
+
+    // Insert 5 individual vote records with unique emails/phones to avoid constraint violations
+    const votePromises = [];
+    for (let i = 0; i < votes; i++) {
+      const uniqueEmail = `${voterEmail.split('@')[0]}_${Date.now()}_${i}@${voterEmail.split('@')[1]}`;
+      const uniquePhone = `+1555${Date.now().toString().slice(-7)}${i.toString().padStart(2, '0')}`;
+      
+      votePromises.push(
+        pool.query(
+          'INSERT INTO votes (voter_name, voter_email, voter_phone, company_id) VALUES ($1, $2, $3, $4) RETURNING id',
+          [voterName, uniqueEmail, uniquePhone, id]
+        )
+      );
+    }
+
+    const results = await Promise.all(votePromises);
+    const voteIds = results.map(result => result.rows[0].id);
+
+    // Send each vote to Google Sheets with original email (not unique ones)
+    const sheetPromises = voteIds.map((voteId, index) => 
+      sendToGoogleSheets({
+        voterName: voterName,
+        voterEmail: voterEmail, // Use original email for sheets
+        voterPhone: '', // No phone number for manual votes in sheets
+        companyName: selectedCompany.name,
+        companyWebsite: selectedCompany.website,
+        voteId: voteId,
+        isManualVote: true,
+        reason: reason
+      }).catch(error => {
+        console.error('Failed to send manual vote to Google Sheets:', error);
+      })
+    );
+
+    // Don't wait for Google Sheets to complete
+    Promise.all(sheetPromises);
+
+    res.json({ 
+      message: `Successfully added ${votes} votes to ${selectedCompany.name}`,
+      voteIds: voteIds,
+      company: selectedCompany
+    });
+
+  } catch (error) {
+    console.error('Error adding manual votes:', error);
+    res.status(500).json({ error: 'Failed to add manual votes' });
+  }
+});
 
 // Add a new company - simple version
 app.post('/api/admin/companies', async (req, res) => {
